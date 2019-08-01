@@ -1,116 +1,140 @@
 import numpy as np
 import pandas as pd
 import datetime as dt
-from calendar_kb import Calendar_kb
-from black_scholes_ver03 import Black_Scholes_kb
+import QuantLib as ql
+
+from black_scholes_ver10 import AnalyticBlackScholes
 import scipy as sc
 from scipy import stats
 import matplotlib.pyplot as plt
 
 
-class GreeksParameters_kb(Black_Scholes_kb):
-    def __init__(self, type_option, S0, K, r, t, volatility, dr, fr, divid, today, maturity_date, day_convention):
-        Black_Scholes_kb.__init__(self, type_option, S0, K, r, t, volatility, dr, fr, divid, today, maturity_date,
-                                  day_convention)
+class GreeksParameters(AnalyticBlackScholes):
+    def __init__(self, valuation_date, termination_date, calendar, convention, schedule_freq,
+                 business_convention,
+                 termination_business_convention,
+                 date_generation, end_of_month, type_option, current_price, strike,
+                 ann_risk_free_rate,
+                 ann_volatility,
+                 ann_dividend, lprices, lvolatilities
+                 ):
 
-    def delta_fun(self, scope):
+        AnalyticBlackScholes.__init__(self, valuation_date, termination_date, calendar, convention, schedule_freq,
+                                      business_convention,
+                                      termination_business_convention,
+                                      date_generation, end_of_month, type_option, current_price, strike,
+                                      ann_risk_free_rate,
+                                      ann_volatility,
+                                      ann_dividend, lprices, lvolatilities
+                                      )
+
+        self.m_delta = self.delta_fun()
+        self.m_gamma = self.gamma_fun()
+        self.m_vega=self.vega_fun()
+
+    def delta_fun(self):#for call and put is identical
         vdelta = []
-        for self.S0 in scope:
-            d1 = self.d1_fun()
-            if (self.type_option == self.type_option):
-                delta = stats.norm.cdf(d1, 0, 1)
+        ld1 = [self.d1_fun() for self._S0 in self._ml_prices]
+        for i in range(len(ld1)):
+
+            if (self._type_option == 'call'):
+                delta = stats.norm.cdf(ld1[i], 0, 1)
+                vdelta.append(delta)
             else:
-                delta = -stats.norm.cdf(-d1, 0, 1)
-            vdelta.append(delta)
+                delta = -stats.norm.cdf(-ld1[i], 0, 1)
+                vdelta.append(delta)
         return vdelta
 
-    def gamma_fun(self, scope):
+    def gamma_fun(self): #for call and put is identical
         vgamma = []
-        for self.S0 in scope:
-            d1 = self.d1_fun()
-            gamma = stats.norm.pdf(d1, 0, 1) / (self.S0 * self.volatility * np.sqrt(self.year_fraction_two_dates_fun()))
+        ld1 = [self.d1_fun() for self._S0 in self._ml_prices]
+        for i in range(len(ld1)):
+            gamma = stats.norm.pdf(ld1[i], 0, 1) / (
+                        self._ml_prices[i] * self._sigma * np.sqrt(self.mf_yf_between_valu_date_and_maturity))
             vgamma.append((gamma))
         return vgamma
 
-    def vega_fun(self, scope):
+    def vega_fun(self):
         vvega = []
-        for self.volatility in scope:
-            d1 = (np.log(self.S0 / self.K) + (
-                        self.r - self.divid + 0.5 * self.volatility ** 2) * self.year_fraction_two_dates_fun()) / (
-                         np.sqrt(self.year_fraction_two_dates_fun()) * self.volatility)
-            vega = self.S0 * np.sqrt(self.year_fraction_two_dates_fun()) * stats.norm.pdf(d1, 0, 1)
+        ld1 = [self.d1_fun() for self._sigma in self._n_volati]
+        for i in range(len(self._n_volati)):
+            d1 = (np.log(self._S0 / self._K) + (
+                        self._r - self._divid + 0.5 * self._n_volati[i] ** 2) * self.mf_yf_between_valu_date_and_maturity) / (
+                         np.sqrt(self.mf_yf_between_valu_date_and_maturity) * self._n_volati[i])
+            vega = self._S0 * np.sqrt(self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(d1, 0, 1)
             vvega.append(vega)
         return vvega
 
 
 if __name__ == '__main__':
-    greeks_6m = GreeksParameters_kb(type_option='call',
-                                    S0=41,
-                                    K=40,
-                                    r=0.08,
-                                    t=0,
-                                    volatility=0.25,
-                                    today=dt.date(2018, 6, 8),
-                                    maturity_date=dt.date(2018, 12, 8),
-                                    day_convention='Actual/365',
-                                    dr=0.02,  # domestic rate
-                                    fr=0.018,
-                                    divid=0)  # foreing rate
+    #############################################----GREEKS----#####################################################
 
-    greeks_3m = GreeksParameters_kb(type_option='call',
-                                 S0=41,
-                                 K=40,
-                                 r=0.08,
-                                 t=0,
-                                 volatility=0.25,
-                                 today=dt.date(2018, 9, 8),
-                                 maturity_date=dt.date(2018, 12, 8),
-                                 day_convention='Actual/365',
-                                 dr=0.02,  # domestic rate
-                                 fr=0.018,
-                                 divid=0)  # foreing rate
+    o_black_scholes_3m = GreeksParameters(valuation_date='2019-06-03',
+                                          termination_date='2019-09-03',
+                                          schedule_freq='Annual',
+                                          convention='ActualActual',  # Daily,Monthly,Quarterly
+                                          calendar=ql.Poland(),
+                                          business_convention=ql.Following,
+                                          termination_business_convention=ql.Following,
+                                          date_generation=ql.DateGeneration.Forward,
+                                          end_of_month=False,
+                                          ##################################
+                                          type_option='call',
+                                          current_price=90,  # change for 90
+                                          strike=91,
+                                          ann_risk_free_rate=0.03,
+                                          ann_volatility=0.25,
+                                          ann_dividend=0,
+                                          lprices=np.arange(60, 100),
+                                          lvolatilities=np.arange(0.1, 0.5, 0.05))
 
-    greeks_7d = GreeksParameters_kb(type_option='call',
-                                    S0=41,
-                                    K=40,
-                                    r=0.08,
-                                    t=0,
-                                    volatility=0.25,
-                                    today=dt.date(2018, 12, 1),
-                                    maturity_date=dt.date(2018, 12, 8),
-                                    day_convention='Actual/365',
-                                    dr=0.02,  # domestic rate
-                                    fr=0.018,
-                                    divid=0)  # fore
+    print('the end')
 
-    delta_v_6m = greeks_6m.delta_fun(scope=np.arange(30, 56))
-    delta_v_3m=greeks_3m.delta_fun(scope=np.arange(30, 56))
-    delta_v_7d = greeks_7d.delta_fun(scope=np.arange(30, 56))
-    plt.plot(np.arange(30, 56), delta_v_6m,label="6 months")
-    plt.plot(np.arange(30, 56), delta_v_3m,label="3 months")
-    plt.plot(np.arange(30, 56), delta_v_7d,label="7 days")
-    plt.xlabel("Spot Price")
-    plt.ylabel("Delta")
-    plt.title("Delta of Call Options")
-    plt.legend()
-    plt.show()
-
-    delta_v_6m = greeks_6m.gamma_fun(scope=np.arange(30, 56))
-    delta_v_3m = greeks_3m.gamma_fun(scope=np.arange(30, 56))
-    delta_v_7d = greeks_7d.gamma_fun(scope=np.arange(30, 56))
-    plt.plot(np.arange(30, 56), delta_v_6m, label="6 months")
-    plt.plot(np.arange(30, 56), delta_v_3m, label="3 months")
-    plt.plot(np.arange(30, 56), delta_v_7d, label="7 days")
-    plt.xlabel("Spot Price")
-    plt.ylabel("Delta")
-    plt.title("Delta of Call Options")
-    plt.legend()
-    plt.show()
-
-    #gamma_v_3m = greeks_3m.gamma_fun(scope=np.arange(30, 56))
-    #vega_v = greeks_3m.vega_fun(scope=[0.1, 0.2, 0.3])
-
-    #plt.plot(np.arange(30, 56), delta_v_3m)
-    # plt.plot(np.arange(35,46),gamma_v)
-
-    print("The End")
+    #                              S0=41,
+    #                              K=40,
+    #                              r=0.08,
+    #                              t=0,
+    #                              volatility=0.25,
+    #                              today=dt.date(2018, 9, 8),
+    #                              maturity_date=dt.date(2018, 12, 8),
+    #                              day_convention='Actual/365',
+    #                              dr=0.02,  # domestic rate
+    #                              fr=0.018,
+    #                              divid=0)  # foreing rate
+    #
+    # greeks_7d = GreeksParameters_kb(type_option='call',
+    #                                 S0=41,
+    #                                 K=40,
+    #                                 r=0.08,
+    #                                 t=0,
+    #                                 volatility=0.25,
+    #                                 today=dt.date(2018, 12, 1),
+    #                                 maturity_date=dt.date(2018, 12, 8),
+    #                                 day_convention='Actual/365',
+    #                                 dr=0.02,  # domestic rate
+    #                                 fr=0.018,
+    #                                 divid=0)  # fore
+    #
+    # delta_v_6m = greeks_6m.delta_fun(scope=np.arange(30, 56))
+    # delta_v_3m=greeks_3m.delta_fun(scope=np.arange(30, 56))
+    # delta_v_7d = greeks_7d.delta_fun(scope=np.arange(30, 56))
+    # plt.plot(np.arange(30, 56), delta_v_6m,label="6 months")
+    # plt.plot(np.arange(30, 56), delta_v_3m,label="3 months")
+    # plt.plot(np.arange(30, 56), delta_v_7d,label="7 days")
+    # plt.xlabel("Spot Price")
+    # plt.ylabel("Delta")
+    # plt.title("Delta of Call Options")
+    # plt.legend()
+    # plt.show()
+    #
+    # delta_v_6m = greeks_6m.gamma_fun(scope=np.arange(30, 56))
+    # delta_v_3m = greeks_3m.gamma_fun(scope=np.arange(30, 56))
+    # delta_v_7d = greeks_7d.gamma_fun(scope=np.arange(30, 56))
+    # plt.plot(np.arange(30, 56), delta_v_6m, label="6 months")
+    # plt.plot(np.arange(30, 56), delta_v_3m, label="3 months")
+    # plt.plot(np.arange(30, 56), delta_v_7d, label="7 days")
+    # plt.xlabel("Spot Price")
+    # plt.ylabel("Delta")
+    # plt.title("Delta of Call Options")
+    # plt.legend()
+    # plt.show()
