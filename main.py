@@ -209,6 +209,7 @@ if __name__ == '__main__':
     plt.ylabel('prices')
     plt.xticks([set_index[0],set_index[-1]])
     plt.show()
+    # check if there are changes
 
     ####
 
