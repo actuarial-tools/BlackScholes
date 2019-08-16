@@ -29,11 +29,11 @@ class GreeksParameters(AnalyticBlackScholes):
                                       ann_dividend,
                                       )
 
-        self.m_delta = self.delta_fun()
-        self.m_gamma = self.gamma_fun()
-        self.m_vega = self.vega_fun()
+        self.m_delta = self.delta()
+        self.m_gamma = self.gamma()
+        self.m_vega = self.vega()
 
-    def delta_fun(self):
+    def delta(self):
 
         if (self._type_option == 'call'):
             delta = stats.norm.cdf(self.d1_fun(), 0, 1)
@@ -43,15 +43,15 @@ class GreeksParameters(AnalyticBlackScholes):
 
         return delta
 
-    def gamma_fun(self):  # for call and put is identical
+    def gamma(self):  # for call and put is identical
         gamma = stats.norm.pdf(self.d1_fun(), 0, 1) * np.exp(
             -self._divid * self.mf_yf_between_valu_date_and_maturity) / (
-                        self.black_scholes_price_fun() * self._sigma * np.sqrt(
+                        self._S0 * self._sigma * np.sqrt(
                     self.mf_yf_between_valu_date_and_maturity))
 
         return gamma
 
-    def vega_fun(self):
+    def vega(self):
         vega = self._S0 * np.sqrt(-self._divid * self.mf_yf_between_valu_date_and_maturity) * np.sqrt(
             self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(self.d1_fun(), 0, 1)
 
@@ -60,21 +60,21 @@ class GreeksParameters(AnalyticBlackScholes):
     def theta(self):
         if (self._type_option == 'call'):
             fTheta = -self._S0 * stats.norm.pdf(self.d1_fun(), 0, 1) * self._sigma * np.exp(
-                -self._divid * self.mf_yf_between_valu_date_and_maturity) / 2 * np.sqrt(-self._divid *
-                                                                                        self.mf_yf_between_valu_date_and_maturity) + self._divid * self._S0 * np.sqrt(
+                -self._divid * self.mf_yf_between_valu_date_and_maturity) / 2 * np.sqrt(
+                self.mf_yf_between_valu_date_and_maturity) + self._divid * self._S0 * np.exp(
                 -self._divid *
                 self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(self.d1_fun(), 0,
-                                                                            1) - self._r * self._K * np.sqrt(-self._r *
-                                                                                                             self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(
+                                                                            1) - self._r * self._K * np.exp(-self._r *
+                                                                                                            self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(
                 self.d2_fun(), 0, 1)
-        if (self._type_option == 'call'):
+        if (self._type_option == 'put'):
             fTheta = -self._S0 * stats.norm.pdf(self.d1_fun(), 0, 1) * self._sigma * np.exp(
-                -self._divid * self.mf_yf_between_valu_date_and_maturity) / 2 * np.sqrt(-self._divid *
-                                                                                        self.mf_yf_between_valu_date_and_maturity) - self._divid * self._S0 * np.sqrt(
+                -self._divid * self.mf_yf_between_valu_date_and_maturity) / 2 * np.sqrt(
+                self.mf_yf_between_valu_date_and_maturity) - self._divid * self._S0 * np.exp(
                 -self._divid *
                 self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(-self.d1_fun(), 0,
-                                                                            1) + self._r * self._K * np.sqrt(-self._r *
-                                                                                                             self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(
+                                                                            1) - self._r * self._K * np.exp(-self._r *
+                                                                                                            self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(
                 -self.d2_fun(), 0, 1)
         return fTheta
 
