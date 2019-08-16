@@ -202,16 +202,13 @@ if __name__ == '__main__':
 
     df_scenarios = pd.DataFrame(gbmRealizations, index=set_index)
 
-    for k in range(15):
+    for k in range(18):
         plt.plot(df_scenarios[k])
     plt.grid(True)
     plt.xlabel('time')
     plt.ylabel('prices')
     plt.xticks([set_index[0],set_index[-1]])
     plt.show()
-    # check if there are changes
-
-    ####
 
 
     #############################################----SIMULATION----#####################################################
