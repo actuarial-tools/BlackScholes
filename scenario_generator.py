@@ -7,11 +7,43 @@ from scipy import stats
 import operator
 import QuantLib as ql
 import seaborn as sns
-
+import os
 import matplotlib.pyplot as plt
+import pandas as pd
 
 sys.path.append('../CalendarAlgorithm')
 from calendar_ql_supported import SetUpSchedule
+
+controlPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
+os.chdir(controlPath)
+controlFile = pd.read_excel('BlackScholes.xlsx', sheet_name='Input')
+
+
+class QuantLibConverter:
+    def __init__(self, calendar):
+        self._calendar = calendar
+        self.mqlCalendar = self.setCalendar()
+        self.mqlBusinessConvention = self.setBusinessConvention()
+        self.mqlTerminationBusinessConvention = self.setTerminationBusinessConvention()
+
+    def setCalendar(self):
+        if self._calendar == 'USA':
+            return ql.UnitedStates()
+        if self._calendar == 'United Kingdom':
+            return ql.UnitedKingdom()
+        if self._calendar == 'Switzerland':
+            return ql.Switzerland()
+        if self._calendar == 'Poland':
+            return ql.Poland()
+
+    def setBusinessConvention(self):
+        return ql.Following
+
+    def setTerminationBusinessConvention(self):
+        return ql.Following
+
+
+qlConverter = QuantLibConverter(calendar=controlFile.loc[4, 'Value'])
 
 
 class EquityModels(SetUpSchedule):
@@ -71,7 +103,7 @@ class EquityModels(SetUpSchedule):
         ST = self.m_ar_equity_price[-1]
         hist = sns.distplot(ST, hist=True, rug=True)
         plt.axvline(self._S0, color='red')
-        plt.xlim((0, 160))
+        plt.xlim((0, max(ST) + 5))
         plt.xlabel("Spot Price")
         plt.show()
 
@@ -79,25 +111,23 @@ class EquityModels(SetUpSchedule):
 
 
 if __name__ == '__main__':
-    o_black_scholes_scenarios = EquityModels(valuation_date='2019-06-20',
-                                             termination_date='2019-08-20',
-                                             schedule_freq='Daily',
-                                             convention='ActualActual',  # Daily,Monthly,Quarterly
-                                             calendar=ql.Poland(),
+    o_black_scholes_scenarios = EquityModels(valuation_date=controlFile.loc[0, 'Value'],
+                                             termination_date=controlFile.loc[1, 'Value'],
+                                             schedule_freq=controlFile.loc[2, 'Value'],
+                                             convention=controlFile.loc[3, 'Value'],  # Daily,Monthly,Quarterly
+                                             calendar=qlConverter.mqlCalendar,
                                              business_convention=ql.Following,
-                                             # TODO Find out what does it mean. It is int =0
-                                             # TODO Find out what does it mean. It is int =0
                                              termination_business_convention=ql.Following,
                                              date_generation=ql.DateGeneration.Forward,
-                                             end_of_month=False,
+                                             end_of_month=controlFile.loc[8, 'Value'],
                                              ##################################
-                                             type_option='call',
-                                             current_price=90,
-                                             strike=91,
-                                             ann_risk_free_rate=0.03,
-                                             ann_volatility=0.25,
-                                             ann_dividend=0,
-                                             runs=100000)
+                                             type_option=controlFile.loc[9, 'Value'],
+                                             current_price=controlFile.loc[10, 'Value'],
+                                             strike=controlFile.loc[11, 'Value'],
+                                             ann_risk_free_rate=controlFile.loc[12, 'Value'],
+                                             ann_volatility=controlFile.loc[13, 'Value'],
+                                             ann_dividend=controlFile.loc[14, 'Value'],
+                                             runs=controlFile.loc[15, 'Value'])
 
     gbmRealizations = o_black_scholes_scenarios.m_ar_equity_price
     o_black_scholes_scenarios.histogramOfSt()
