@@ -70,6 +70,9 @@ class EquityModels(SetUpSchedule):
     def histogramOfSt(self):
         ST = self.m_ar_equity_price[-1]
         hist = sns.distplot(ST, hist=True, rug=True)
+        plt.axvline(self._S0, color='red')
+        plt.xlim((0, 160))
+        plt.xlabel("Spot Price")
         plt.show()
 
 
