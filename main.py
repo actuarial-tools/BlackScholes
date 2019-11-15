@@ -36,6 +36,8 @@ if __name__ == '__main__':
                                               ann_dividend=0,
                                               )
 
+    d1test = o_black_scholes_1y.black_scholes_price_fun()
+
     o_black_scholes_3m = AnalyticBlackScholes(valuation_date='2019-06-03',
                                               termination_date='2019-09-03',
                                               schedule_freq='Annual',
@@ -86,7 +88,7 @@ if __name__ == '__main__':
     option_price3d = [o_black_scholes_3d.black_scholes_price_fun() for o_black_scholes_3d._S0 in prices_range]
     change_vol3d = [o_black_scholes_3d.black_scholes_price_fun() for o_black_scholes_3d._sigma in vol_range]
 
-    b_draw_plots = False
+    b_draw_plots = True
     if b_draw_plots == True:
         plt.plot(prices_range, option_price1y, label="1y to maturity")
         plt.plot(prices_range, option_price3m, label="3m to maturity")
@@ -157,7 +159,7 @@ if __name__ == '__main__':
     delta3m = [greeks_3m.delta() for greeks_3m._S0 in prices_range]
     delta3d = [greeks_3d.delta() for greeks_3d._S0 in prices_range]
 
-    b_delta_plots = False
+    b_delta_plots = True
     if b_delta_plots == True:
         plt.plot(prices_range, delta1y, label="1y to maturity")
         plt.plot(prices_range, delta3m, label="3m to maturity")
@@ -214,6 +216,7 @@ if __name__ == '__main__':
                                              convention='ActualActual',  # Daily,Monthly,Quarterly
                                              calendar=ql.Poland(),
                                              business_convention=ql.Following,
+                                             # TODO Find out what does it mean. It is int =0
                                              # TODO Find out what does it mean. It is int =0
                                              termination_business_convention=ql.Following,
                                              date_generation=ql.DateGeneration.Forward,

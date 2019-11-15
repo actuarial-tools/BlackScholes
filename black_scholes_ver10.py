@@ -67,11 +67,5 @@ class AnalyticBlackScholes(SetUpSchedule):
         return price
 
 
-
-
-
-
-
-
 if __name__ == '__main__':
     pass

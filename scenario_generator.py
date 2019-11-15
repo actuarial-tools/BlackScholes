@@ -1,11 +1,14 @@
 import sys
 
-import matplotlib.pyplot as plt
+
 import numpy as np
 import scipy as sc
 from scipy import stats
 import operator
 import QuantLib as ql
+import seaborn as sns
+
+import matplotlib.pyplot as plt
 
 sys.path.append('../CalendarAlgorithm')
 from calendar_ql_supported import SetUpSchedule
@@ -15,8 +18,9 @@ class EquityModels(SetUpSchedule):
 
     def __init__(self, valuation_date, termination_date, calendar, convention, schedule_freq, business_convention,
                  termination_business_convention,
-                 date_generation, end_of_month, type_option, current_price, strike, ann_risk_free_rate,
-                 ann_volatility, ann_dividend, runs):
+                 date_generation, end_of_month, type_option: str, current_price: float, strike: float,
+                 ann_risk_free_rate: float,
+                 ann_volatility: float, ann_dividend: float, runs: int):
         SetUpSchedule.__init__(self, valuation_date, termination_date, calendar, business_convention,
                                termination_business_convention,
                                date_generation, end_of_month, convention, schedule_freq)
@@ -57,11 +61,42 @@ class EquityModels(SetUpSchedule):
         sorted_zip = sorted(zipped, key=lambda x: x[0])  # without sorting there is a problem with ploting
         return sorted_zip
 
-    def monte_carlo_price(self):
+    def monte_carlo_price(self) -> float:
         take_payoff = lambda x: x[1] #get second coordinates from tuple
         payoff = list(map(take_payoff, self.mlt_payoffandST))
         return np.mean(payoff)*np.exp(-self._drift*self.mf_yf_between_valu_date_and_maturity)
 
+    # histogram corresponding to the final values of paths
+    def histogramOfSt(self):
+        ST = self.m_ar_equity_price[-1]
+        hist = sns.distplot(ST, hist=True, rug=True)
+        plt.show()
+
+
+
 
 if __name__ == '__main__':
-    pass
+    o_black_scholes_scenarios = EquityModels(valuation_date='2019-06-20',
+                                             termination_date='2019-08-20',
+                                             schedule_freq='Daily',
+                                             convention='ActualActual',  # Daily,Monthly,Quarterly
+                                             calendar=ql.Poland(),
+                                             business_convention=ql.Following,
+                                             # TODO Find out what does it mean. It is int =0
+                                             # TODO Find out what does it mean. It is int =0
+                                             termination_business_convention=ql.Following,
+                                             date_generation=ql.DateGeneration.Forward,
+                                             end_of_month=False,
+                                             ##################################
+                                             type_option='call',
+                                             current_price=90,
+                                             strike=91,
+                                             ann_risk_free_rate=0.03,
+                                             ann_volatility=0.25,
+                                             ann_dividend=0,
+                                             runs=100000)
+
+    gbmRealizations = o_black_scholes_scenarios.m_ar_equity_price
+    o_black_scholes_scenarios.histogramOfSt()
+
+    print('the end')
