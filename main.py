@@ -15,51 +15,55 @@ from calendar_ql_supported import SetUpSchedule
 from black_scholes_ver10 import AnalyticBlackScholes
 from greeks import GreeksParameters
 from scenario_generator import EquityModels
+from utilities import QuantLibConverter
+
+controlPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
+os.chdir(controlPath)
+controlFile1Y = pd.read_excel('BlackScholes.xlsx', sheet_name='Input 1Y')
+
+
 
 if __name__ == '__main__':
-    o_black_scholes_1y = AnalyticBlackScholes(valuation_date='2019-06-03',
-                                              termination_date='2020-06-03',
-                                              schedule_freq='Annual',
-                                              convention='ActualActual',  # Daily,Monthly,Quarterly
-                                              calendar=ql.Poland(),
-                                              business_convention=ql.Following,
-                                              # TODO Find out what does it mean. It is int =0
-                                              termination_business_convention=ql.Following,
-                                              date_generation=ql.DateGeneration.Forward,
-                                              end_of_month=False,
-                                              ##################################
-                                              type_option='call',
-                                              current_price=90,  # change for 90
-                                              strike=91,
-                                              ann_risk_free_rate=0.03,
-                                              ann_volatility=0.25,
-                                              ann_dividend=0,
-                                              )
+    qlConverter = QuantLibConverter(calendar=controlFile1Y.loc[4, 'Value'])
 
-    d1test = o_black_scholes_1y.black_scholes_price_fun()
-
-    o_black_scholes_3m = AnalyticBlackScholes(valuation_date='2019-06-03',
-                                              termination_date='2019-09-03',
-                                              schedule_freq='Annual',
-                                              convention='ActualActual',  # Daily,Monthly,Quarterly
-                                              calendar=ql.Poland(),
-                                              business_convention=ql.Following,
-                                              # TODO Find out what does it mean. It is int =0
-                                              termination_business_convention=ql.Following,
+    o_black_scholes_1y = AnalyticBlackScholes(valuation_date=controlFile1Y.loc[0, 'Value'],
+                                              termination_date=controlFile1Y.loc[1, 'Value'],
+                                              schedule_freq=controlFile1Y.loc[2, 'Value'],
+                                              convention=controlFile1Y.loc[3, 'Value'],  # Daily,Monthly,Quarterly
+                                              calendar=qlConverter.mqlCalendar,
+                                              business_convention=qlConverter.mqlBusinessConvention,
+                                              termination_business_convention=qlConverter.mqlTerminationBusinessConvention,
                                               date_generation=ql.DateGeneration.Forward,
-                                              end_of_month=False,
+                                              end_of_month=controlFile1Y.loc[8, 'Value'],
                                               ##################################
-                                              type_option='call',
-                                              current_price=90,  # change for 90
-                                              strike=91,
-                                              ann_risk_free_rate=0.03,
-                                              ann_volatility=0.25,
-                                              ann_dividend=0,
-                                              )
+                                              type_option=controlFile1Y.loc[9, 'Value'],
+                                              current_price=controlFile1Y.loc[10, 'Value'],
+                                              strike=controlFile1Y.loc[11, 'Value'],
+                                              ann_risk_free_rate=controlFile1Y.loc[12, 'Value'],
+                                              ann_volatility=controlFile1Y.loc[13, 'Value'],
+                                              ann_dividend=controlFile1Y.loc[14, 'Value'])
+
+    o_black_scholes_3m = AnalyticBlackScholes(valuation_date=controlFile1Y.loc[0, 'Value'],
+                                              termination_date=controlFile1Y.loc[1, 'Value'],
+                                              schedule_freq=controlFile1Y.loc[2, 'Value'],
+                                              convention=controlFile1Y.loc[3, 'Value'],  # Daily,Monthly,Quarterly
+                                              calendar=qlConverter.mqlCalendar,
+                                              business_convention=qlConverter.mqlBusinessConvention,
+                                              termination_business_convention=qlConverter.mqlTerminationBusinessConvention,
+                                              date_generation=ql.DateGeneration.Forward,
+                                              end_of_month=controlFile1Y.loc[8, 'Value'],
+                                              ##################################
+                                              type_option=controlFile1Y.loc[9, 'Value'],
+                                              current_price=controlFile1Y.loc[10, 'Value'],
+                                              strike=controlFile1Y.loc[11, 'Value'],
+                                              ann_risk_free_rate=controlFile1Y.loc[12, 'Value'],
+                                              ann_volatility=controlFile1Y.loc[13, 'Value'],
+                                              ann_dividend=controlFile1Y.loc[14, 'Value'])
+
 
     o_black_scholes_3d = AnalyticBlackScholes(valuation_date='2019-06-03',
                                               termination_date='2019-06-06',
-                                              schedule_freq='Annual',
+                                              schedule_freq='Annual',  # tu powinno byc two dates czemu to dziala ?:D
                                               convention='ActualActual',  # Daily,Monthly,Quarterly
                                               calendar=ql.Poland(),
                                               business_convention=ql.Following,

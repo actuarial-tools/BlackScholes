@@ -1,6 +1,4 @@
 import sys
-
-
 import numpy as np
 import scipy as sc
 from scipy import stats
@@ -14,36 +12,17 @@ import pandas as pd
 sys.path.append('../CalendarAlgorithm')
 from calendar_ql_supported import SetUpSchedule
 
+sys.path.append('../PythonandSQL')
+from calendar_ql_supported import SetUpSchedule
+from excelconnector import OutputInExcel
+from utilities import QuantLibConverter
+
 controlPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
 os.chdir(controlPath)
 controlFile = pd.read_excel('BlackScholes.xlsx', sheet_name='Input')
 
 
-class QuantLibConverter:
-    def __init__(self, calendar):
-        self._calendar = calendar
-        self.mqlCalendar = self.setCalendar()
-        self.mqlBusinessConvention = self.setBusinessConvention()
-        self.mqlTerminationBusinessConvention = self.setTerminationBusinessConvention()
 
-    def setCalendar(self):
-        if self._calendar == 'USA':
-            return ql.UnitedStates()
-        if self._calendar == 'United Kingdom':
-            return ql.UnitedKingdom()
-        if self._calendar == 'Switzerland':
-            return ql.Switzerland()
-        if self._calendar == 'Poland':
-            return ql.Poland()
-
-    def setBusinessConvention(self):
-        return ql.Following
-
-    def setTerminationBusinessConvention(self):
-        return ql.Following
-
-
-qlConverter = QuantLibConverter(calendar=controlFile.loc[4, 'Value'])
 
 
 class EquityModels(SetUpSchedule):
@@ -64,9 +43,11 @@ class EquityModels(SetUpSchedule):
         self._divid = ann_dividend
         self._runs = runs
         self.m_ar_equity_price = self.geometric_brownian_motion_scenario_fun()
+        self.mdfprices = self.realizationPaths()
         self.mlt_payoffandST = self.calculate_payoffs()  # lt list of tuples ST and tuples and payoff sorted
         self.mf_monte_carlo_price = self.monte_carlo_price()
         self.mListOfDates=self.m_schedule
+
 
     def geometric_brownian_motion_scenario_fun(self):
         dt = self.ml_yf
@@ -107,17 +88,24 @@ class EquityModels(SetUpSchedule):
         plt.xlabel("Spot Price")
         plt.show()
 
+    def realizationPaths(self):
+        df = pd.DataFrame(self.m_ar_equity_price, index=self.ml_dates)
+        return df
+
 
 
 
 if __name__ == '__main__':
+    qlConverter = QuantLibConverter(calendar=controlFile.loc[4, 'Value'],
+                                    )
+
     o_black_scholes_scenarios = EquityModels(valuation_date=controlFile.loc[0, 'Value'],
                                              termination_date=controlFile.loc[1, 'Value'],
                                              schedule_freq=controlFile.loc[2, 'Value'],
                                              convention=controlFile.loc[3, 'Value'],  # Daily,Monthly,Quarterly
                                              calendar=qlConverter.mqlCalendar,
-                                             business_convention=ql.Following,
-                                             termination_business_convention=ql.Following,
+                                             business_convention=qlConverter.mqlBusinessConvention,
+                                             termination_business_convention=qlConverter.mqlTerminationBusinessConvention,
                                              date_generation=ql.DateGeneration.Forward,
                                              end_of_month=controlFile.loc[8, 'Value'],
                                              ##################################
@@ -129,7 +117,13 @@ if __name__ == '__main__':
                                              ann_dividend=controlFile.loc[14, 'Value'],
                                              runs=controlFile.loc[15, 'Value'])
 
-    gbmRealizations = o_black_scholes_scenarios.m_ar_equity_price
-    o_black_scholes_scenarios.histogramOfSt()
+    # o_black_scholes_scenarios.histogramOfSt()
+    ####################################------OUTPUT in EXCEL------###############################################
+    outputPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
+    os.chdir(controlPath)
+    ####################################------OUTPUT in EXCEL------###############################################
+    excelPrepare = OutputInExcel(FileName='GBM realization.xlsx', SheetNames=['realizations'], Path=outputPath)
+
+    # excelPrepare.createResultsToPresent(ldfToSave=o_black_scholes_scenarios.mdfprices)
 
     print('the end')
