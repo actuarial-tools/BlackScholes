@@ -17,9 +17,10 @@ from calendar_ql_supported import SetUpSchedule
 from excelconnector import OutputInExcel
 from utilities import QuantLibConverter
 
-controlPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
-os.chdir(controlPath)
-controlFile = pd.read_excel('BlackScholes.xlsx', sheet_name='Input')
+
+# controlPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
+# os.chdir(controlPath)
+# controlFile = pd.read_excel('BlackScholes.xlsx', sheet_name='Input')
 
 
 
