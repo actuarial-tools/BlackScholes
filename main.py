@@ -103,6 +103,14 @@ if __name__ == '__main__':
     option_price3m = [o_black_scholes_3m.black_scholes_price_fun() for o_black_scholes_3m._S0 in prices_range]
     change_vol3m = [o_black_scholes_3m.black_scholes_price_fun() for o_black_scholes_3m._sigma in vol_range]
 
+    # Create Data Frame that represents price change
+    transposePricesRange = np.transpose(prices_range)
+    columns = ['Underlying price', 'Option Price 3D maturity', 'Option Price 3M maturity', 'Option Price 1Y maturity']
+    dfPriceChange = pd.DataFrame([prices_range, option_price3d, option_price3m, option_price1y])
+    dfPriceChange = dfPriceChange.transpose()
+    dfPriceChange = pd.DataFrame([dfPriceChange.values], columns=columns)
+
+
     b_draw_plots = True
     if b_draw_plots == True:
         plt.plot(prices_range, option_price1y, label="1y to maturity")
@@ -180,7 +188,7 @@ if __name__ == '__main__':
         plt.ylabel("Delta")
         plt.title("Delta of Option")
         plt.legend()
-        plt.show()
+        plt.savefig('Delta.png')
     ##########Delta
 
     ##########Gamma
@@ -198,7 +206,7 @@ if __name__ == '__main__':
         plt.ylabel("Gamma")
         plt.title("Gamma of Option")
         plt.legend()
-        plt.show()
+        plt.savefig('Gamma.png')
     ##########Gamma
 
     ########## Theta
@@ -216,6 +224,7 @@ if __name__ == '__main__':
         plt.ylabel("Theta")
         plt.title("Theta of Option")
         plt.legend()
+        plt.savefig('Theta.png')
 
 
     ########## Theta
@@ -257,6 +266,7 @@ if __name__ == '__main__':
         plt.ylabel('prices')
         plt.xticks([set_index[0], set_index[-1]])
         plt.show()
+        plt.savefig('Equity Paths.png')
 
     # o_black_scholes_scenarios.histogramOfSt()
     ####################################------OUTPUT in EXCEL------###############################################
