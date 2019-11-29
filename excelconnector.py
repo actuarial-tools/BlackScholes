@@ -6,6 +6,13 @@ import sqlalchemy
 from os import listdir
 import os
 from typing import List
+import xlsxwriter
+import xlrd
+from openpyxl import Workbook
+from openpyxl.workbook.workbook import save_workbook
+from openpyxl.utils import get_column_letter
+import getpass
+
 
 
 class ExcelFilesDetails():
@@ -43,6 +50,8 @@ class ExcelFilesDetails():
 
     def dataFrameSumary(self) -> pd.DataFrame():
         return pd.DataFrame.from_dict(self.create_dictionary(), orient='index')
+
+
 
 
 class CreateDataFrame:
@@ -91,6 +100,7 @@ class CreateDataFrame:
 
         return ltShapes
 
+
     def modify_columns_data_frame(self, columns_name: str,
                                   l_fill_in: str) -> pd.DataFrame:  # TODO expand possibility to remove columns, the same with rows
         base_data_frame = self.mdf
@@ -98,7 +108,6 @@ class CreateDataFrame:
         base_data_frame[columns_name] = new_col
         modified_df = base_data_frame
         return modified_df
-
 
 class OutputInExcel:
     def __init__(self, FileName, SheetNames, Path):
@@ -136,4 +145,17 @@ class OutputInExcel:
 
 
 if __name__ == "__main__":
-    pass
+    controlPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
+    os.chdir(controlPath)
+
+    workbook = xlsxwriter.Workbook('test.xlsx')
+    worksheet = workbook.add_worksheet('test1')
+    worksheet.write('A3', 5)
+    workbook.close()
+    #
+
+    # source = fileForUploading.get_sheet_by_name('test1')
+    # source['D2'] = 3  # cellLocation=A2
+    # source.save('test.xlsx')
+    # fileForUploading.close()
+    #
