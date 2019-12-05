@@ -2,9 +2,11 @@ import dash
 import dash_core_components as dcc
 import dash_table as dt
 import dash_html_components as html
+import QuantLib as ql
 
 from dash.dependencies import Output, Input
 from dash.exceptions import PreventUpdate
+from black_scholes_ver10 import AnalyticBlackScholes
 
 import plotly.graph_objs as go
 import pandas as pd
@@ -67,6 +69,9 @@ app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
     ])
 def optionPrice(valDate, endDate, schedule, convention, calendar, bussConv, TerminationBussConv, endMonth, optionType,
                 currentPrice, strike, riskFree, volatility, dividend):
+    qlDate1 = ql.Date(valDate.day, valDate.month, valDate.year)
+    qlDate2 = ql.Date(endDate.day, endDate.month, endDate.year)
+
     o_black_scholes_3m = AnalyticBlackScholes(valuation_date=valDate,
                                               termination_date=endDate,
                                               schedule_freq=schedule,
