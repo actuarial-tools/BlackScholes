@@ -41,7 +41,7 @@ app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
                        dcc.Input(id='currentPrice', value='', type='number', placeholder='Current Price'),
                        dcc.Input(id='strike', value='', type='number', placeholder='Strike'),
                        dcc.Input(id='riskFree', value='', type='number', placeholder='Risk Free Rate'),
-                       dcc.Input(id='voltility', value='', type='number', placeholder='Volatility'),
+                       dcc.Input(id='volatility', value='', type='number', placeholder='Volatility'),
                        dcc.Input(id='dividend', value='', type='number', placeholder='Dividend'),
                        ])
 
@@ -58,10 +58,34 @@ app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
         Input('Termination Business Convention', 'value'),
         Input('endOfMonth', 'value'),
         Input('optiontype', 'value'),
+        Input('currentPrice', 'value'),
+        Input('strike', 'value'),
+        Input('riskFree', 'value'),
+        Input('volatility', 'value'),
+        Input('dividend', 'value'),
 
-    ]
+    ])
+def optionPrice(valDate, endDate, schedule, convention, calendar, bussConv, TerminationBussConv, endMonth, optionType,
+                currentPrice, strike, riskFree, volatility, dividend):
+    o_black_scholes_3m = AnalyticBlackScholes(valuation_date=valDate,
+                                              termination_date=endDate,
+                                              schedule_freq=schedule,
+                                              convention=convention,  # Daily,Monthly,Quarterly
+                                              calendar=calendar,  # qlConverter.mqlCalendar,
+                                              business_convention=bussConv,  # qlConverter.mqlBusinessConvention,
+                                              termination_business_convention=bussConv,
+                                              # qlConverter.mqlTerminationBusinessConvention,
+                                              date_generation=TerminationBussConv,  # ql.DateGeneration.Forward,
+                                              end_of_month=endMonth,  # controlFile3m.loc[8, 'Value'],
+                                              ##################################
+                                              type_option=optionType,  # controlFile3m.loc[9, 'Value'],
+                                              current_price=currentPrice,  # controlFile3m.loc[10, 'Value'],
+                                              strike=strike,  # controlFile3m.loc[11, 'Value'],
+                                              ann_risk_free_rate=riskFree,  # controlFile3m.loc[12, 'Value'],
+                                              ann_volatility=volatility,  # controlFile3m.loc[13, 'Value'],
+                                              ann_dividend=dividend,  # controlFile3m.loc[14, 'Value'])
 
-)
+                                              )
 
 
 if __name__ == '__main__':
