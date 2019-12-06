@@ -3,6 +3,7 @@ import numpy as np
 import scipy as sc
 from scipy import stats
 import QuantLib as ql
+from datetime import datetime
 
 
 class SetUpSchedule():
@@ -17,8 +18,8 @@ class SetUpSchedule():
         self._ql_date_generation = date_generation
         self._b_end_of_month = end_of_month
         self.s_days_conv = convention
-        self.m_ql_valuation_date = self.convert_string_into_ql_object(date=self._svaluation_date)
-        self.m_ql_termination_date = self.convert_string_into_ql_object(date=self._stermination_date)
+        self.m_ql_valuation_date = self.convertDateIntoqlDate(date=self._svaluation_date)
+        self.m_ql_termination_date = self.convertDateIntoqlDate(date=self._stermination_date)
         self.m_day_count = self.set_days_convention(give_name=self.s_days_conv)
         self.mql_period_frequency = self.set_schedule_frequency()
         self.m_schedule = self.get_schedule()
@@ -30,12 +31,16 @@ class SetUpSchedule():
         self.ml_yf = self.consecutive_year_fractions()  # two consecutive dates year fraction
         self.mf_yf_between_valu_date_and_maturity = self.year_fraction_between_valuation_and_maturity()
 
-    def convert_string_into_ql_object(self, date):
-        year = int(date[0:4])
-        month = int(date[5:7])
-        day = int(date[8:])
-        ql_date = ql.Date(day, month, year)
-        return ql_date
+    def convertDateIntoqlDate(self, date):
+        if type(date) == str:
+            year = int(date[0:4])
+            month = int(date[5:7])
+            day = int(date[8:])
+            ql_date = ql.Date(day, month, year)
+            return ql_date
+        elif type(date) == datetime:
+            ql_date = ql.Date(date.day, date.month, date.year)
+            return ql_date
 
     def set_days_convention(self, give_name):
         if (give_name == 'Actual360'):
@@ -70,12 +75,9 @@ class SetUpSchedule():
         if self._s_schedule_freq == "Two Dates":
             return ql.Period()
 
-        if self._s_schedule_freq == 'modified':
-            return
-
     def get_schedule(self):
-        assert isinstance(self._svaluation_date, str)
-        assert isinstance(self._stermination_date, str)
+        # assert isinstance(self._svaluation_date, str) or isinstance(self._svaluation_date, datetime)
+        # assert isinstance(self._stermination_date, str) or isinstance(self._svaluation_date, datetime)
         return ql.Schedule(
             self.m_ql_valuation_date,
             self.m_ql_termination_date,

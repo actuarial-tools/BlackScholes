@@ -35,4 +35,4 @@ class QuantLibConverter:
         return ql.Following
 
     def setWayOfDateGeneration(self):
-        return ql
+        return ql.DateGeneration.Forward
