@@ -49,14 +49,14 @@ app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
                        dcc.DatePickerSingle(id='valuationDate', date=datetime.datetime(2019, 11, 25)),
                        dcc.DatePickerSingle(id='endDate', date=datetime.datetime(2020, 2, 20)),
                        html.Br(),
-                       dcc.Input(id='schedule', placeholder='Define Schedule'),
+                       dcc.Input(id='schedule', placeholder='Define Schedule', value='Two Dates'),
                        html.Br(),
                        dcc.Dropdown(id='convention', placeholder='Chose Available Convention',
                                     options=[{'label': 'Actual Actual', 'value': 'ActualActual'},
                                              {'label': 'Actual360', 'value': 'Actual360'},
                                              {'label': 'Actual365', 'value': 'Actual365'},
                                              {'label': 'Thirty360', 'value': 'Thirty360'},
-                                             {'label': 'Business252', 'value': 'Business252'}]),
+                                             {'label': 'Business252', 'value': 'Business252'}], value='ActualActual'),
                        dcc.Dropdown(id='calendar', placeholder='Put the name of Country',
                                     options=[{'label': 'UK', 'value': 'United Kingdom'},
                                              {'label': 'United States', 'value': 'USA'},
@@ -68,7 +68,8 @@ app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
                        dcc.Input(id='Termination Business Convention',
                                  placeholder='Define Termination Business Convention', value='Following'),
                        dcc.Input(id='endOfMonth', value='False'),
-                       dcc.Dropdown(id='optiontype', options=[{'label': 'Call Option', 'value': 'call'}]),
+                       dcc.Dropdown(id='optiontype', options=[{'label': 'Call Option', 'value': 'call'},
+                                                              {'label': 'Put Option', 'value': 'put'}], value='call'),
                        html.Hr(),
                        dcc.Input(id='currentPrice', value='90', type='number', placeholder='Current Price'),
                        dcc.Input(id='strike', value='92', type='number', placeholder='Strike'),
@@ -100,52 +101,29 @@ app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
         Input('dividend', 'value'),
 
     ])
-def presentParameters(valuationDate, endDate, schedule, convention, calendar, BusinessConvention,
-                      TerminationBusinessConvention,
-                      endOfMonth, optiontype, currentPrice, strike, riskFree, volatility, dividend):
-    print(valuationDate,
-          endDate,
-          schedule,
-          convention,
-          calendar,
-          BusinessConvention,
-          TerminationBusinessConvention,
-          endOfMonth,
-          optiontype,
-          currentPrice,
-          strike,
-          riskFree,
-          volatility,
-          dividend,
-          QuantLibConverter(calendar=calendar).mqlCalendar,
-          QuantLibConverter(calendar=calendar).mqlBusinessConvention,
-          )
+def optionPrice(valDate, endDate, schedule, convention, calendar, endMonth, optionType,
+                currentPrice, strike, riskFree, volatility, dividend):
+    o_black_scholes = AnalyticBlackScholes(valuation_date=valDate,
+                                           termination_date=endDate,
+                                           schedule_freq=schedule,
+                                           convention=convention,
+                                           calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                                           business_convention=QuantLibConverter(
+                                               calendar=calendar).mqlBusinessConvention,
+                                           termination_business_convention=QuantLibConverter(
+                                               calendar=calendar).mqlTerminationBusinessConvention,
+                                           date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                                           end_of_month=endMonth,
+                                           ##################################
+                                           type_option=optionType,
+                                           current_price=currentPrice,
+                                           strike=strike,
+                                           ann_risk_free_rate=riskFree,
+                                           ann_volatility=volatility,
+                                           ann_dividend=dividend)
+    price = o_black_scholes.black_scholes_price_fun()
 
-
-# def optionPrice(valDate, endDate, schedule, convention, calendar, bussConv, TerminationBussConv, endMonth, optionType,
-#                 currentPrice, strike, riskFree, volatility, dividend):
-#     o_black_scholes = AnalyticBlackScholes(valuation_date=valDate,
-#                                            termination_date=endDate,
-#                                            schedule_freq=schedule,
-#                                            convention=convention,  # Daily,Monthly,Quarterly
-#                                            calendar=calendar,  # qlConverter.mqlCalendar,
-#                                            business_convention=bussConv,  # qlConverter.mqlBusinessConvention,
-#                                            termination_business_convention=TerminationBussConv,
-#                                            # qlConverter.mqlTerminationBusinessConvention,
-#                                            date_generation=ql.DateGeneration.Forward,  # ql.DateGeneration.Forward,
-#                                            end_of_month=endMonth,  # controlFile3m.loc[8, 'Value'],
-#                                            ##################################
-#                                            type_option=optionType,  # controlFile3m.loc[9, 'Value'],
-#                                            current_price=currentPrice,  # controlFile3m.loc[10, 'Value'],
-#                                            strike=strike,  # controlFile3m.loc[11, 'Value'],
-#                                            ann_risk_free_rate=riskFree,  # controlFile3m.loc[12, 'Value'],
-#                                            ann_volatility=volatility,  # controlFile3m.loc[13, 'Value'],
-#                                            ann_dividend=dividend,  # controlFile3m.loc[14, 'Value'])
-#
-#                                            )
-#     price = o_black_scholes.black_scholes_price_fun()
-#
-#     return html.Div([html.H4(f'price of option {price}')])
+    return html.Div([html.H4(f'price of option {price}')])
 
 
 if __name__ == '__main__':
