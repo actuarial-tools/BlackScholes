@@ -18,8 +18,10 @@ class SetUpSchedule():
         self._ql_date_generation = date_generation
         self._b_end_of_month = end_of_month
         self.s_days_conv = convention
-        self.m_ql_valuation_date = self.convertDateIntoqlDate(date=self._svaluation_date)
-        self.m_ql_termination_date = self.convertDateIntoqlDate(date=self._stermination_date)
+        self.mdtValuationDate = self.stringIntoDateTime(s_Date=self._svaluation_date)
+        self.mdtTerminationDate = self.stringIntoDateTime(s_Date=self._stermination_date)
+        self.m_ql_valuation_date = self.convertDateIntoqlDate(date=self.mdtValuationDate)
+        self.m_ql_termination_date = self.convertDateIntoqlDate(date=self.mdtTerminationDate)
         self.m_day_count = self.set_days_convention(give_name=self.s_days_conv)
         self.mql_period_frequency = self.set_schedule_frequency()
         self.m_schedule = self.get_schedule()
@@ -31,16 +33,25 @@ class SetUpSchedule():
         self.ml_yf = self.consecutive_year_fractions()  # two consecutive dates year fraction
         self.mf_yf_between_valu_date_and_maturity = self.year_fraction_between_valuation_and_maturity()
 
+    def stringIntoDateTime(self, s_Date):
+        truncateDate = s_Date[:10]
+        return datetime.strptime(truncateDate, '%Y-%m-%d')
+
+    # def convertDateIntoqlDate(self, date):
+    #     if type(date) == str:
+    #         year = int(date[0:4])
+    #         month = int(date[5:7])
+    #         day = int(date[8:])
+    #         ql_date = ql.Date(day, month, year)
+    #         return ql_date
+    #     elif type(date) == datetime:
+    #         ql_date = ql.Date(date.day, date.month, date.year)
+    #         return ql_date
+
     def convertDateIntoqlDate(self, date):
-        if type(date) == str:
-            year = int(date[0:4])
-            month = int(date[5:7])
-            day = int(date[8:])
-            ql_date = ql.Date(day, month, year)
-            return ql_date
-        elif type(date) == datetime:
-            ql_date = ql.Date(date.day, date.month, date.year)
-            return ql_date
+
+        ql_date = ql.Date(date.day, date.month, date.year)
+        return ql_date
 
     def set_days_convention(self, give_name):
         if (give_name == 'Actual360'):
