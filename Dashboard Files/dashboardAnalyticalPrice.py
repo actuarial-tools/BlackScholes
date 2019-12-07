@@ -17,37 +17,17 @@ import datetime
 external_stylesheets = ['https://codepen.io/chridyp/pen/bWLgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-qlConverter = QuantLibConverter(calendar='United Kingdom')
-
-# o_black_scholes = AnalyticBlackScholes(valuation_date=datetime.datetime(2019, 11, 25),
-#                                        termination_date=datetime.datetime(2020, 2, 20),
-#                                        schedule_freq='Two Dates',
-#                                        convention='ActualActual',  # Daily,Monthly,Quarterly
-#                                        calendar=qlConverter.mqlCalendar,  # qlConverter.mqlCalendar,
-#                                        business_convention=qlConverter.mqlBusinessConvention,
-#                                        # qlConverter.mqlBusinessConvention,
-#                                        termination_business_convention=qlConverter.mqlTerminationBusinessConvention,
-#                                        # qlConverter.mqlTerminationBusinessConvention,
-#                                        date_generation=ql.DateGeneration.Forward,  # ql.DateGeneration.Forward,
-#                                        end_of_month=False,  # controlFile3m.loc[8, 'Value'],
-#                                        ##################################
-#                                        type_option='call',  # controlFile3m.loc[9, 'Value'],
-#                                        current_price=90,  # controlFile3m.loc[10, 'Value'],
-#                                        strike=92,  # controlFile3m.loc[11, 'Value'],
-#                                        ann_risk_free_rate=0.1,  # controlFile3m.loc[12, 'Value'],
-#                                        ann_volatility=0.23,  # controlFile3m.loc[13, 'Value'],
-#                                        ann_dividend=0)  # controlFile3m.loc[14, 'Value'])
-#
-# print('tests of object')
 
 app.layout = html.Div([dcc.Textarea(value='Pricing Plain Vanilla Option',
                                     style={'width': '100%', 'color': 'green', 'fontSize': 18,
                                            'background-color': 'yellow', 'border-style': 'dashed',
                                            'text-align': 'center'}),
-                       html.Label('Place provide parameters'),
+                       html.Label('Place provide the date for which you would like to price the contract'),
                        html.Br(),
                        dcc.DatePickerSingle(id='valuationDate', date=datetime.datetime(2019, 11, 25),
                                             display_format='YYYY-MM-DD'),
+                       html.Label('Place provide the termination the contract.'),
+                       html.Br(),
                        dcc.DatePickerSingle(id='endDate', date=datetime.datetime(2020, 2, 20),
                                             display_format='YYYY-MM-DD'),
                        html.Br(),
@@ -133,9 +113,17 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
                                            ann_risk_free_rate=riskFree,
                                            ann_volatility=volatility,
                                            ann_dividend=dividend)
-    price = o_black_scholes.black_scholes_price_fun()
+    price = round(o_black_scholes.black_scholes_price_fun()[0], 3)
+    year_fraction = round(o_black_scholes.mf_yf_between_valu_date_and_maturity, 3)
 
-    return html.Div([html.H4(f'Analytical price of option {price[0]}')])
+    return html.Div([html.H4(f'Annuity for this contract  {year_fraction}'),
+                     html.Hr(),
+                     dcc.Textarea(value=f'Analytical price of option {price}',
+                                  style={'width': '100%', 'color': 'red', 'fontSize': 18,
+                                         'background-color': 'blue', 'border-style': 'dashed',
+                                         'text-align': 'center'})
+
+                     ])
 
 
 if __name__ == '__main__':
