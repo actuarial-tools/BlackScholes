@@ -81,7 +81,7 @@ class SetUpSchedule():
             return ql.Period(ql.Quarterly)
         if self._s_schedule_freq == "Semiannual":
             return ql.Period(ql.Semiannual)
-        if self._s_schedule_freq == "Annual":
+        if self._s_schedule_freq == "   ":
             return ql.Period(ql.Annual)
         if self._s_schedule_freq == "Two Dates":
             return ql.Period()

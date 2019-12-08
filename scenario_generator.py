@@ -97,33 +97,34 @@ class EquityModels(SetUpSchedule):
 
 
 if __name__ == '__main__':
-    qlConverter = QuantLibConverter(calendar=controlFile.loc[4, 'Value'],
-                                    )
-
-    o_black_scholes_scenarios = EquityModels(valuation_date=controlFile.loc[0, 'Value'],
-                                             termination_date=controlFile.loc[1, 'Value'],
-                                             schedule_freq=controlFile.loc[2, 'Value'],
-                                             convention=controlFile.loc[3, 'Value'],  # Daily,Monthly,Quarterly
-                                             calendar=qlConverter.mqlCalendar,
-                                             business_convention=qlConverter.mqlBusinessConvention,
-                                             termination_business_convention=qlConverter.mqlTerminationBusinessConvention,
-                                             date_generation=ql.DateGeneration.Forward,
-                                             end_of_month=controlFile.loc[8, 'Value'],
-                                             ##################################
-                                             type_option=controlFile.loc[9, 'Value'],
-                                             current_price=controlFile.loc[10, 'Value'],
-                                             strike=controlFile.loc[11, 'Value'],
-                                             ann_risk_free_rate=controlFile.loc[12, 'Value'],
-                                             ann_volatility=controlFile.loc[13, 'Value'],
-                                             ann_dividend=controlFile.loc[14, 'Value'],
-                                             runs=controlFile.loc[15, 'Value'])
-
-    # o_black_scholes_scenarios.histogramOfSt()
-    ####################################------OUTPUT in EXCEL------###############################################
-    outputPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
-    os.chdir(controlPath)
-    ####################################------OUTPUT in EXCEL------###############################################
-    excelPrepare = OutputInExcel(FileName='GBM realization.xlsx', SheetNames=['realizations'], Path=outputPath)
+    pass
+    # qlConverter = QuantLibConverter(calendar=controlFile.loc[4, 'Value'],
+    #                                 )
+    #
+    # o_black_scholes_scenarios = EquityModels(valuation_date=controlFile.loc[0, 'Value'],
+    #                                          termination_date=controlFile.loc[1, 'Value'],
+    #                                          schedule_freq=controlFile.loc[2, 'Value'],
+    #                                          convention=controlFile.loc[3, 'Value'],  # Daily,Monthly,Quarterly
+    #                                          calendar=qlConverter.mqlCalendar,
+    #                                          business_convention=qlConverter.mqlBusinessConvention,
+    #                                          termination_business_convention=qlConverter.mqlTerminationBusinessConvention,
+    #                                          date_generation=ql.DateGeneration.Forward,
+    #                                          end_of_month=controlFile.loc[8, 'Value'],
+    #                                          ##################################
+    #                                          type_option=controlFile.loc[9, 'Value'],
+    #                                          current_price=controlFile.loc[10, 'Value'],
+    #                                          strike=controlFile.loc[11, 'Value'],
+    #                                          ann_risk_free_rate=controlFile.loc[12, 'Value'],
+    #                                          ann_volatility=controlFile.loc[13, 'Value'],
+    #                                          ann_dividend=controlFile.loc[14, 'Value'],
+    #                                          runs=controlFile.loc[15, 'Value'])
+    #
+    # # o_black_scholes_scenarios.histogramOfSt()
+    # ####################################------OUTPUT in EXCEL------###############################################
+    # outputPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
+    # os.chdir(controlPath)
+    # ####################################------OUTPUT in EXCEL------###############################################
+    # excelPrepare = OutputInExcel(FileName='GBM realization.xlsx', SheetNames=['realizations'], Path=outputPath)
 
     # excelPrepare.createResultsToPresent(ldfToSave=o_black_scholes_scenarios.mdfprices)
 
