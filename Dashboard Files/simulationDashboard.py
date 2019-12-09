@@ -28,17 +28,17 @@ def generate_table(dataframe, max_rows=26):
 
 external_stylesheets = ['https://codepen.io/chridyp/pen/bWLgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-fig = go.Figure()
+
 
 app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                                     style={'width': '100%', 'color': 'green', 'fontSize': 18,
                                            'background-color': 'yellow', 'border-style': 'dashed',
                                            'text-align': 'center'}),
-                       html.Label('Place provide the date for which you would like to price the contract'),
+                       html.Label('Place provide the date when you want to start modeling'),
                        html.Br(),
                        dcc.DatePickerSingle(id='valuationDate', date=datetime.datetime(2019, 11, 25),
                                             display_format='YYYY-MM-DD'),
-                       html.Label('Place provide the termination the contract.'),
+                       html.Label('Place provide the end of modeling.'),
                        html.Br(),
                        dcc.DatePickerSingle(id='endDate', date=datetime.datetime(2020, 2, 20),
                                             display_format='YYYY-MM-DD'),
@@ -71,6 +71,8 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                        dcc.Input(id='Termination Business Convention',
                                  placeholder='Define Termination Business Convention', value='Following'),
                        dcc.Input(id='endOfMonth', value='False'),
+                       html.Br(),
+                       html.Label('Place provide the parameters for option'),
                        dcc.Dropdown(id='optiontype', options=[{'label': 'Call Option', 'value': 'call'},
                                                               {'label': 'Put Option', 'value': 'put'}], value='call'),
                        html.Hr(),
@@ -83,14 +85,21 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                        dcc.RadioItems(id='sample',
                                       options=[{'label': '1000', 'value': 1000}, {'label': '10000', 'value': 10000},
                                                {'label': '100000', 'value': 100000}], value=1000),
+                       dcc.RadioItems(id='numberOfPathToDisplay',
+                                      options=[{'label': '10', 'value': 10}, {'label': '15', 'value': 15},
+                                               {'label': '25', 'value': 25}, {'label': '50', 'value': 50}], value=15),
                        ###################################----RESULT----###############################################
-                       html.Div(id='MonteCarloPrice', children='')
+                       html.Div(id='MonteCarloPrice', children=''),
+                       dcc.Graph(id='paths')
+
                        ###################################----RESULT----###############################################
                        ])
 
 
 @app.callback(
+
     Output('MonteCarloPrice', 'children'),
+
     [
         Input('valuationDate', 'date'),
         Input('endDate', 'date'),
@@ -104,10 +113,11 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
         Input('volatility', 'value'),
         Input('dividend', 'value'),
         Input('sample', 'value'),
+        Input('numberOfPathToDisplay', 'value')
 
     ])
 def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
-                currentPrice, strike, riskFree, volatility, dividend, runs):
+                currentPrice, strike, riskFree, volatility, dividend, runs, display):
     equitySimulation = EquityModels(valuation_date=valDate,
                                     termination_date=endDate,
                                     schedule_freq=schedule,
@@ -129,14 +139,35 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
                                     runs=runs)
 
     price = round(equitySimulation.mf_monte_carlo_price, 3)
-    paths = equitySimulation.mdfprices
-    pathshtml = generate_table(paths)
+    paths = equitySimulation.m_ar_equity_price
+    lqlDates = list(equitySimulation.mListOfDates)
+    ldtDates = [d.to_date() for d in lqlDates]
 
     return html.Div([
+        dcc.Graph(figure=dict(data=
+                              [dict(x=ldtDates,
+                                    y=paths[:, i],
+                                    name=f'Path{i}',
+                                    marker=dict(color='')) for i in range(display)],
+                              layout=dict(
+                                  xaxis={'title': 'Dates'},
+                                  yaxis={'title': 'Equity Price'},
+                                  title='Equity simulation modeled by geometric brownian motion',
+                                  showlegend=True,
+                                  legend=dict(x=0,
+                                              y=1.0),
+                                  margin=dict(l=40, r=0, t=40, b=30),
+                              )
+
+                              ),
+                  style={'height': 300},
+                  id='my-graph'
+                  ),
+
         dcc.Textarea(value=f'Monte Carlo Price price of option {price}',
                      style={'width': '100%', 'color': 'red', 'fontSize': 18,
                             'background-color': 'blue', 'border-style': 'dashed',
-                            'text-align': 'center'}),
+                            'text-align': 'center'})
 
     ])
 
