@@ -84,6 +84,9 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                        dcc.Input(id='riskFree', value=0.1, type='number', placeholder='Risk Free Rate'),
                        dcc.Input(id='volatility', value=0.23, type='number', placeholder='Volatility'),
                        dcc.Input(id='dividend', value=0, type='number', placeholder='Dividend'),
+                       html.Hr(),
+                       html.Label('Place provide the parameters for running simulation'),
+                       html.Br(),
                        dcc.RadioItems(id='sample',
                                       options=[{'label': '1000', 'value': 1000}, {'label': '10000', 'value': 10000},
                                                {'label': '100000', 'value': 100000}], value=1000),
@@ -92,7 +95,7 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                                                {'label': '25', 'value': 25}, {'label': '50', 'value': 50}], value=15),
                        ###################################----RESULT----###############################################
                        html.Div(id='MonteCarloPrice', children=''),
-                       dcc.Graph(id='paths')
+
 
                        ###################################----RESULT----###############################################
                        ])
@@ -162,8 +165,8 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
                               )
 
                               ),
-                  style={'height': 300},
-                  id='my-graph'
+                  style={'height': 300}
+
                   ),
 
         dcc.Textarea(value=f'Monte Carlo Price price of option {price}',
