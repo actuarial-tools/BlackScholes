@@ -13,6 +13,7 @@ import plotly.graph_objs as go
 import pandas as pd
 import os
 import datetime
+import base64
 
 
 def generate_table(dataframe, max_rows=26):
@@ -29,6 +30,8 @@ def generate_table(dataframe, max_rows=26):
 external_stylesheets = ['https://codepen.io/chridyp/pen/bWLgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+image_filename = '/Users/krzysiekbienias/Documents/GitHub/BlackScholes/Dashboard Files/discretization.png'  # replace with your own image
+encoded_image = base64.b64encode(open(image_filename, 'rb').read())
 
 app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                                     style={'width': '100%', 'color': 'green', 'fontSize': 18,
@@ -93,12 +96,14 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                        dcc.RadioItems(id='numberOfPathToDisplay',
                                       options=[{'label': '10', 'value': 10}, {'label': '15', 'value': 15},
                                                {'label': '25', 'value': 25}, {'label': '50', 'value': 50}], value=15),
+                       html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
+                                style={'text-align': 'center'}),
+                       html.Hr(),
                        ###################################----RESULT----###############################################
                        html.Div(id='MonteCarloPrice', children=''),
 
-
                        ###################################----RESULT----###############################################
-                       ])
+                       ], style={'align-items': 'center', 'justify-content': 'center'})
 
 
 @app.callback(
