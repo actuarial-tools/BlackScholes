@@ -169,6 +169,152 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        html.Div(id='MonteCarloPriceMc', children='')
 
                                    ]
+                                   ),
+
+                           dcc.Tab(label='Sensitivity Analysis', style={'background-color': 'pink'},
+                                   # short
+                                   children=[html.Div([
+                                       html.Br(),
+                                       dcc.DatePickerSingle(id='valuationDateShort',
+                                                            date=datetime.datetime(2019, 11, 25),
+                                                            display_format='YYYY-MM-DD'),
+                                       html.Br(),
+                                       html.Label('Place provide the end of modeling.'),
+                                       html.Br(),
+                                       dcc.DatePickerSingle(id='endDateShort', date=datetime.datetime(2019, 12, 5),
+                                                            display_format='YYYY-MM-DD'),
+                                       html.Br(),
+                                       dcc.Dropdown(id='scheduleShort', style={'background-color': 'orange'},
+                                                    placeholder='Define Schedule',
+                                                    value='Daily',
+                                                    options=[{'label': 'Two Dates', 'value': 'Two Dates'},
+                                                             {'label': 'Daily', 'value': 'Daily'},
+                                                             {'label': 'Weekly', 'value': 'Weekly'},
+                                                             {'label': 'Monthly', 'value': 'Monthly'},
+                                                             {'label': 'Quarterly', 'value': 'Quarterly'},
+                                                             {'label': 'Semiannual', 'value': 'Semiannual'},
+                                                             {'label': 'Annual', 'value': 'Annual'},
+
+                                                             ]),
+                                       html.Br(),
+                                       dcc.Dropdown(id='conventionShort', style={'background-color': 'purple'},
+                                                    placeholder='Chose Available Convention',
+                                                    options=[{'label': 'Actual Actual', 'value': 'ActualActual'},
+                                                             {'label': 'Actual360', 'value': 'Actual360'},
+                                                             {'label': 'Actual365', 'value': 'Actual365'},
+                                                             {'label': 'Thirty360', 'value': 'Thirty360'},
+                                                             {'label': 'Business252', 'value': 'Business252'}],
+                                                    value='ActualActual'),
+                                       dcc.Dropdown(id='calendarShort', placeholder='Put the name of Country',
+                                                    options=[{'label': 'UK', 'value': 'United Kingdom'},
+                                                             {'label': 'United States', 'value': 'USA'},
+                                                             {'label': 'Switzerland', 'value': 'Switzerland'},
+                                                             {'label': 'Poland', 'value': 'Poland'}
+                                                             ], value='United Kingdom'),
+
+                                       dcc.Input(id='Business ConventionShort',
+                                                 placeholder='Define Business Convention',
+                                                 value='Following'),
+                                       dcc.Input(id='Termination Business ConventionShort',
+                                                 placeholder='Define Termination Business Convention',
+                                                 value='Following'),
+                                       dcc.Input(id='endOfMonthShort', value='False'),
+                                       html.Br(),
+                                       html.Label('Place provide the parameters for option'),
+                                       dcc.Dropdown(id='optionTypeShort',
+                                                    options=[{'label': 'Call Option', 'value': 'call'},
+                                                             {'label': 'Put Option', 'value': 'put'}],
+                                                    value='call'),
+                                       html.Hr(),
+                                       dcc.Input(id='currentPriceShort', value=90, type='number',
+                                                 placeholder='Current Price'),
+                                       dcc.Input(id='strikeShort', value=92, type='number', placeholder='Strike'),
+                                       dcc.Input(id='riskFreeShort', value=0.1, type='number',
+                                                 placeholder='Risk Free Rate'),
+                                       dcc.Input(id='volatilityShort', value=0.23, type='number',
+                                                 placeholder='Volatility'),
+                                       dcc.Input(id='dividendShort', value=0, type='number', placeholder='Dividend'),
+
+                                       # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
+                                       # style={'text-align': 'center'}),
+
+                                       html.Hr(),
+                                       ###################################----RESULT----###############################################
+                                       html.Div(id='MonteCarloPriceShort', children='')]),
+
+                                       html.Div([
+                                           html.Br(),
+                                           dcc.DatePickerSingle(id='valuationDateMedium',
+                                                                date=datetime.datetime(2019, 11, 25),
+                                                                display_format='YYYY-MM-DD'),
+                                           html.Br(),
+                                           html.Label('Place provide the end of modeling.'),
+                                           html.Br(),
+                                           dcc.DatePickerSingle(id='endDateShortMedium',
+                                                                date=datetime.datetime(2020, 2, 20),
+                                                                display_format='YYYY-MM-DD'),
+                                           html.Br(),
+                                           dcc.Dropdown(id='scheduleShortMedium', style={'background-color': 'orange'},
+                                                        placeholder='Define Schedule',
+                                                        value='Daily',
+                                                        options=[{'label': 'Two Dates', 'value': 'Two Dates'},
+                                                                 {'label': 'Daily', 'value': 'Daily'},
+                                                                 {'label': 'Weekly', 'value': 'Weekly'},
+                                                                 {'label': 'Monthly', 'value': 'Monthly'},
+                                                                 {'label': 'Quarterly', 'value': 'Quarterly'},
+                                                                 {'label': 'Semiannual', 'value': 'Semiannual'},
+                                                                 {'label': 'Annual', 'value': 'Annual'},
+
+                                                                 ]),
+                                           html.Br(),
+                                           dcc.Dropdown(id='conventionShortMedium',
+                                                        style={'background-color': 'purple'},
+                                                        placeholder='Chose Available Convention',
+                                                        options=[{'label': 'Actual Actual', 'value': 'ActualActual'},
+                                                                 {'label': 'Actual360', 'value': 'Actual360'},
+                                                                 {'label': 'Actual365', 'value': 'Actual365'},
+                                                                 {'label': 'Thirty360', 'value': 'Thirty360'},
+                                                                 {'label': 'Business252', 'value': 'Business252'}],
+                                                        value='ActualActual'),
+                                           dcc.Dropdown(id='calendarShortMedium', placeholder='Put the name of Country',
+                                                        options=[{'label': 'UK', 'value': 'United Kingdom'},
+                                                                 {'label': 'United States', 'value': 'USA'},
+                                                                 {'label': 'Switzerland', 'value': 'Switzerland'},
+                                                                 {'label': 'Poland', 'value': 'Poland'}
+                                                                 ], value='United Kingdom'),
+
+                                           dcc.Input(id='Business ConventionShortMedium',
+                                                     placeholder='Define Business Convention',
+                                                     value='Following'),
+                                           dcc.Input(id='Termination Business ConventionMedium',
+                                                     placeholder='Define Termination Business Convention',
+                                                     value='Following'),
+                                           dcc.Input(id='endOfMonthMedium', value='False'),
+                                           html.Br(),
+                                           html.Label('Place provide the parameters for option'),
+                                           dcc.Dropdown(id='optionTypeMedium',
+                                                        options=[{'label': 'Call Option', 'value': 'call'},
+                                                                 {'label': 'Put Option', 'value': 'put'}],
+                                                        value='call'),
+                                           html.Hr(),
+                                           dcc.Input(id='currentPriceMedium', value=90, type='number',
+                                                     placeholder='Current Price'),
+                                           dcc.Input(id='strikeMedium', value=92, type='number', placeholder='Strike'),
+                                           dcc.Input(id='riskFreeMedium', value=0.1, type='number',
+                                                     placeholder='Risk Free Rate'),
+                                           dcc.Input(id='volatilityMedium', value=0.23, type='number',
+                                                     placeholder='Volatility'),
+                                           dcc.Input(id='dividendMedium', value=0, type='number',
+                                                     placeholder='Dividend'),
+
+                                           # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
+                                           # style={'text-align': 'center'}),
+
+                                           html.Hr(),
+                                           ###################################----RESULT----###############################################
+                                           html.Div(id='MonteCarloPriceMedium', children='')])
+
+                                   ]
                                    )
 
                        ])
@@ -280,6 +426,7 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
                                 'text-align': 'center'})
 
         ])
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
