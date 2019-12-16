@@ -7,6 +7,7 @@ import QuantLib as ql
 from dash.dependencies import Output, Input
 from dash.exceptions import PreventUpdate
 from black_scholes_ver10 import AnalyticBlackScholes
+from greeks import GreeksParameters
 from utilities import QuantLibConverter
 
 import plotly.graph_objs as go
@@ -80,12 +81,24 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        html.Button('Press to get year fraction', id='yearFractionButton',
                                                    style={'background-color': 'orange', 'fontSize': 20}),
                                        html.Hr(),
+                                       ###################################----RESULT YEAR FRACTION----###############################################
                                        html.Div(id='yearFraction'),
+                                       ###################################----RESULT YEAR FRACTION----###############################################
                                        html.Button('Press to get analytical price', id='AnalyticalPrice',
                                                    style={'background-color': 'red', 'fontSize': 20}),
-                                       ###################################----RESULT----###############################################
-                                       html.Div(id='optionPriceAnalitical', children='')]
-                                   ###################################----RESULT----###########################################
+                                       ###################################----RESULT OPTION PRICE----###############################################
+                                       html.Div(id='optionPriceAnalitical', children=''),
+                                       ###################################----RESULT OPTION PRICE----###############################################
+                                       html.Hr(),
+                                       ###################################----RESULT Dynamic Slider----###############################################
+                                       html.Div(id='defineSlider', children=''),
+                                       html.Hr(),
+                                       html.Button('Press to get greeks', id='Greeks',
+                                                   style={'background-color': 'brown', 'fontSize': 20}),
+                                       ###################################----GREEK PARAMETERS----###############################################
+                                       html.Div(id='greeks', children='')
+                                       ###################################----GREEK PARAMETERS----###############################################
+                                   ]
 
                                    ),
                            dcc.Tab(label='Monte Carlo Price', style={'background-color': 'green'},
@@ -375,6 +388,7 @@ def dashYearFraction(valDate, endDate, schedule, convention, calendar, optionTyp
                          ])
 
 
+#####################################################----ANALYTICAL PRICE----###########################################
 @app.callback(
     Output('optionPriceAnalitical', 'children'),
     [
@@ -428,5 +442,73 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
         ])
 
 
+@app.callback(
+    Output('defineSlider', 'children'),
+    [
+        Input('currentPriceAnalitical', 'value')
+    ]
+)
+def defineDashboard(starpoint):
+    return html.Div([dcc.RangeSlider(min=starpoint - 10, max=starpoint + 10,
+                                     value=[i for i in range(starpoint - 10, starpoint + 11)])])
+
+
+#
+@app.callback(
+    Output('greeks', 'children'),
+    [
+        Input('valuationDateAnalitical', 'date'),
+        Input('endDateAnalitical', 'date'),
+        Input('scheduleAnalitical', 'value'),
+        Input('conventionAnalitical', 'value'),
+        Input('calendarAnalitical', 'value'),
+        Input('optiontypeAnalitical', 'value'),
+        Input('currentPriceAnalitical', 'value'),
+        Input('strikeAnalitical', 'value'),
+        Input('riskFreeAnalitical', 'value'),
+        Input('volatilityAnalitical', 'value'),
+        Input('dividendAnalitical', 'value'),
+        Input('yearFractionButton', 'n_clicks'),
+        Input('defineSlider', '')
+
+    ])
+def getGreeks(valDate, endDate, schedule, convention, calendar, optionType,
+              currentPrice, strike, riskFree, volatility, dividend, click, sliderRange):
+    greeks = GreeksParameters(valuation_date=valDate,
+                              termination_date=endDate,
+                              schedule_freq=schedule,
+                              convention=convention,
+                              calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                              business_convention=QuantLibConverter(
+                                  calendar=calendar).mqlBusinessConvention,
+                              termination_business_convention=QuantLibConverter(
+                                  calendar=calendar).mqlTerminationBusinessConvention,
+                              date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                              end_of_month=False,
+                              ##################################
+                              type_option=optionType,
+                              current_price=currentPrice,
+                              strike=strike,
+                              ann_risk_free_rate=riskFree,
+                              ann_volatility=volatility,
+                              ann_dividend=dividend)
+
+    # delta = [greeks.delta() for greeks._S0 in sliderRange]
+
+    if click is None:
+        raise PreventUpdate
+    else:
+
+        return html.Div([html.H4(f'Slider values for this contract  {sliderRange}'),
+                         html.Hr(),
+
+                         ])
+
+
+#####################################################----ANALYTICAL PRICE----###########################################
+
+
+#####################################################----MONTE CARLO----###########################################
+#####################################################----MONTE CARLO----###########################################
 if __name__ == '__main__':
     app.run_server(debug=True)
