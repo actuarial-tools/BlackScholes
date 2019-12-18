@@ -24,6 +24,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                            'background-color': 'yellow', 'border-style': 'dashed',
                                            'text-align': 'center'}),
                        dcc.Tabs(children=[
+                           # tab 1
                            dcc.Tab(label='Analytical Price', style={'background-color': 'blue'},
                                    children=[html.Label(
                                        'Place provide the date for which you would like to price the contract'),
@@ -95,6 +96,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                    ]
 
                                    ),
+                           #tab 2
                            dcc.Tab(label='Monte Carlo Price', style={'background-color': 'green'},
                                    children=[
                                        html.Br(),
@@ -170,14 +172,18 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                       value=15),
                                        # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
                                        # style={'text-align': 'center'}),
-
+                                       html.Button('Press to get monte carlo price.', id='monteCarloButton',
+                                                   style={'background-color': 'orange', 'fontSize': 20}),
                                        html.Hr(),
                                        ###################################----RESULT----###############################################
-                                       html.Div(id='MonteCarloPriceMc', children='')
+                                       html.Div(id='MonteCarloPriceMc', children=''),
+                                       html.Button('Press to display paths.', id='DisplayPathButton',
+                                                   style={'background-color': 'orange', 'fontSize': 20}),
+                                       html.Div(id='graph')
 
                                    ]
                                    ),
-
+                           #tab 3
                            dcc.Tab(label='Sensitivity Analysis', style={'background-color': 'pink'},
                                    # short
                                    children=[html.Div([
@@ -623,11 +629,13 @@ def getGreeks(valDate, endDate, schedule, convention, calendar, optionType,
         Input('volatilityMc', 'value'),
         Input('dividendMc', 'value'),
         Input('sampleMc', 'value'),
-        Input('numberOfPathToDisplayMc', 'value')
+        Input('monteCarloButton', 'n_clicks'),
+        Input('numberOfPathToDisplayMc', 'value'),
+        # Input('monteCarloButton','n_clicks'),
 
     ])
 def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
-                currentPrice, strike, riskFree, volatility, dividend, runs, display):
+                currentPrice, strike, riskFree, volatility, dividend, runs, click, click2):
     equitySimulation = EquityModels(valuation_date=valDate,
                                     termination_date=endDate,
                                     schedule_freq=schedule,
@@ -653,34 +661,94 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
     lqlDates = list(equitySimulation.mListOfDates)
     ldtDates = [d.to_date() for d in lqlDates]
 
-    return html.Div([
-        dcc.Graph(figure=dict(data=
-                              [dict(x=ldtDates,
-                                    y=paths[:, i],
-                                    name=f'Path{i}',
-                                    marker=dict(color='')) for i in range(display)],
-                              layout=dict(
-                                  xaxis={'title': 'Dates'},
-                                  yaxis={'title': 'Equity Price'},
-                                  title='Equity simulation modeled by geometric brownian motion',
-                                  showlegend=True,
-                                  legend=dict(x=0,
-                                              y=1.0),
-                                  margin=dict(l=40, r=0, t=40, b=30),
-                              )
+    if click is None:
+        raise PreventUpdate
+    else:
 
-                              ),
-                  style={'height': 300}
+        return html.Div([
+            dcc.Textarea(value=f'Monte Carlo Price price of option {price}',
+                         style={'width': '100%', 'color': 'red', 'fontSize': 18,
+                                'background-color': 'blue', 'border-style': 'dashed',
+                                'text-align': 'center'})
 
-                  ),
+        ])
 
-        dcc.Textarea(value=f'Monte Carlo Price price of option {price}',
-                     style={'width': '100%', 'color': 'red', 'fontSize': 18,
-                            'background-color': 'blue', 'border-style': 'dashed',
-                            'text-align': 'center'})
+
+@app.callback(
+
+    Output('graph', 'children'),
+
+    [
+        Input('valuationDateMc', 'date'),
+        Input('endDateMc', 'date'),
+        Input('scheduleMc', 'value'),
+        Input('conventionMc', 'value'),
+        Input('calendarMc', 'value'),
+        Input('optiontypeMc', 'value'),
+        Input('currentPriceMc', 'value'),
+        Input('strikeMc', 'value'),
+        Input('riskFreeMc', 'value'),
+        Input('volatilityMc', 'value'),
+        Input('dividendMc', 'value'),
+        Input('sampleMc', 'value'),
+        # Input('monteCarloButton','n_clicks'),
+
+        Input('DisplayPathButton', 'n_clicks'),
+        Input('numberOfPathToDisplayMc', 'value'),
 
     ])
+def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
+                currentPrice, strike, riskFree, volatility, dividend, runs, click, display):
+    equitySimulation = EquityModels(valuation_date=valDate,
+                                    termination_date=endDate,
+                                    schedule_freq=schedule,
+                                    convention=convention,
+                                    calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                                    business_convention=QuantLibConverter(
+                                        calendar=calendar).mqlBusinessConvention,
+                                    termination_business_convention=QuantLibConverter(
+                                        calendar=calendar).mqlTerminationBusinessConvention,
+                                    date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                                    end_of_month=False,
+                                    ##################################
+                                    type_option=optionType,
+                                    current_price=currentPrice,
+                                    strike=strike,
+                                    ann_risk_free_rate=riskFree,
+                                    ann_volatility=volatility,
+                                    ann_dividend=dividend,
+                                    runs=runs)
 
+    paths = equitySimulation.m_ar_equity_price
+    lqlDates = list(equitySimulation.mListOfDates)
+    ldtDates = [d.to_date() for d in lqlDates]
+
+    if click is None:
+        raise PreventUpdate
+    else:
+
+        return html.Div([
+            dcc.Graph(figure=dict(data=
+                                  [dict(x=ldtDates,
+                                        y=paths[:, i],
+                                        name=f'Path{i}',
+                                        marker=dict(color='')) for i in range(display)],
+                                  layout=dict(
+                                      xaxis={'title': 'Dates'},
+                                      yaxis={'title': 'Equity Price'},
+                                      title='Equity simulation modeled by geometric brownian motion',
+                                      showlegend=True,
+                                      legend=dict(x=0,
+                                                  y=1.0),
+                                      margin=dict(l=40, r=0, t=40, b=30),
+                                  )
+
+                                  ),
+                      style={'height': 300}
+
+                      ),
+
+        ])
 
 #####################################################----MONTE CARLO CALL BACK----###########################################
 if __name__ == '__main__':
