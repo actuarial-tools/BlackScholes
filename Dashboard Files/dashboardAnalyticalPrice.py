@@ -96,9 +96,9 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                    ]
 
                                    ),
-                           #tab 2
+                           # tab 2
                            dcc.Tab(label='Monte Carlo Price', style={'background-color': 'green'},
-                                   children=[
+                                   children=[html.Div([
                                        html.Br(),
                                        dcc.DatePickerSingle(id='valuationDateMc', date=datetime.datetime(2019, 11, 25),
                                                             display_format='YYYY-MM-DD'),
@@ -182,8 +182,8 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        html.Div(id='graph')
 
                                    ]
-                                   ),
-                           #tab 3
+                                   )]),
+                           # tab 3
                            dcc.Tab(label='Sensitivity Analysis', style={'background-color': 'pink'},
                                    # short
                                    children=[html.Div([
@@ -201,7 +201,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        html.Br(),
                                        dcc.Dropdown(id='scheduleShort', style={'background-color': 'orange'},
                                                     placeholder='Define Schedule',
-                                                    value='Daily',
+                                                    value='Two Dates',
                                                     options=[{'label': 'Two Dates', 'value': 'Two Dates'},
                                                              {'label': 'Daily', 'value': 'Daily'},
                                                              {'label': 'Weekly', 'value': 'Weekly'},
@@ -250,6 +250,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                  placeholder='Volatility'),
                                        dcc.Input(id='dividendShort', value=0, type='number', placeholder='Dividend'),
 
+
                                        # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
                                        # style={'text-align': 'center'}),
 
@@ -267,13 +268,13 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                            html.Br(),
                                            html.Label('Place provide the end of modeling.'),
                                            html.Br(),
-                                           dcc.DatePickerSingle(id='endDateShortMedium',
+                                           dcc.DatePickerSingle(id='endDateMedium',
                                                                 date=datetime.datetime(2020, 2, 20),
                                                                 display_format='YYYY-MM-DD'),
                                            html.Br(),
-                                           dcc.Dropdown(id='scheduleShortMedium', style={'background-color': 'orange'},
+                                           dcc.Dropdown(id='scheduleMedium', style={'background-color': 'orange'},
                                                         placeholder='Define Schedule',
-                                                        value='Daily',
+                                                        value='Two Dates',
                                                         options=[{'label': 'Two Dates', 'value': 'Two Dates'},
                                                                  {'label': 'Daily', 'value': 'Daily'},
                                                                  {'label': 'Weekly', 'value': 'Weekly'},
@@ -284,7 +285,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
 
                                                                  ]),
                                            html.Br(),
-                                           dcc.Dropdown(id='conventionShortMedium',
+                                           dcc.Dropdown(id='conventionMedium',
                                                         style={'background-color': 'purple'},
                                                         placeholder='Chose Available Convention',
                                                         options=[{'label': 'Actual Actual', 'value': 'ActualActual'},
@@ -293,14 +294,14 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                                  {'label': 'Thirty360', 'value': 'Thirty360'},
                                                                  {'label': 'Business252', 'value': 'Business252'}],
                                                         value='ActualActual'),
-                                           dcc.Dropdown(id='calendarShortMedium', placeholder='Put the name of Country',
+                                           dcc.Dropdown(id='calendarMedium', placeholder='Put the name of Country',
                                                         options=[{'label': 'UK', 'value': 'United Kingdom'},
                                                                  {'label': 'United States', 'value': 'USA'},
                                                                  {'label': 'Switzerland', 'value': 'Switzerland'},
                                                                  {'label': 'Poland', 'value': 'Poland'}
                                                                  ], value='United Kingdom'),
 
-                                           dcc.Input(id='Business ConventionShortMedium',
+                                           dcc.Input(id='Business ConventionMedium',
                                                      placeholder='Define Business Convention',
                                                      value='Following'),
                                            dcc.Input(id='Termination Business ConventionMedium',
@@ -323,6 +324,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                      placeholder='Volatility'),
                                            dcc.Input(id='dividendMedium', value=0, type='number',
                                                      placeholder='Dividend'),
+                                           html.Div(id='deltaMedium'),
 
                                            # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
                                            # style={'text-align': 'center'}),
@@ -345,9 +347,9 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                                 date=datetime.datetime(2020, 11, 25),
                                                                 display_format='YYYY-MM-DD'),
                                            html.Br(),
-                                           dcc.Dropdown(id='scheduleShortLong', style={'background-color': 'orange'},
+                                           dcc.Dropdown(id='scheduletLong', style={'background-color': 'orange'},
                                                         placeholder='Define Schedule',
-                                                        value='Daily',
+                                                        value='Two Dates',
                                                         options=[{'label': 'Two Dates', 'value': 'Two Dates'},
                                                                  {'label': 'Daily', 'value': 'Daily'},
                                                                  {'label': 'Weekly', 'value': 'Weekly'},
@@ -358,7 +360,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
 
                                                                  ]),
                                            html.Br(),
-                                           dcc.Dropdown(id='conventionShortLong',
+                                           dcc.Dropdown(id='conventionLong',
                                                         style={'background-color': 'purple'},
                                                         placeholder='Chose Available Convention',
                                                         options=[{'label': 'Actual Actual', 'value': 'ActualActual'},
@@ -397,6 +399,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                      placeholder='Volatility'),
                                            dcc.Input(id='dividendLong', value=0, type='number',
                                                      placeholder='Dividend'),
+                                           html.Div(id='deltaLong'),
 
                                            # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
                                            # style={'text-align': 'center'}),
@@ -411,8 +414,9 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        ###################################----RESULT Dynamic Slider----###############################################
                                        dcc.RangeSlider(id='defineSlider', min=50, max=130),
                                        html.Hr(),
-                                       html.Button('Press to get greeks', id='greeksButton',
+                                       html.Button('Press to get greeks', id='deltaButton',
                                                    style={'background-color': 'brown', 'fontSize': 20}),
+                                       html.Div(id='deltaShort'),
                                        ###################################----GREEK PARAMETERS----###############################################
                                        html.Div(id='greeks', children='')
                                        ###################################----GREEK PARAMETERS----###############################################
@@ -533,78 +537,6 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
         ])
 
 
-@app.callback(
-    Output('defineSlider', 'value'),
-    [
-        Input('currentPriceAnalitical', 'value')
-    ]
-)
-def defineDashboard(starpoint):
-    values = [i for i in range(starpoint - 10, starpoint + 11)]
-    return values
-
-
-@app.callback(
-    Output('defineSlider', 'marks'),
-    [
-        Input('currentPriceAnalitical', 'value')
-    ]
-)
-def defineDashboard(starpoint):
-    marks = {i: f'{i}' for i in range(starpoint - 40, starpoint + 41)}
-    return marks
-
-
-#
-@app.callback(
-    Output('greeks', 'children'),
-    [
-        Input('valuationDateAnalitical', 'date'),
-        Input('endDateAnalitical', 'date'),
-        Input('scheduleAnalitical', 'value'),
-        Input('conventionAnalitical', 'value'),
-        Input('calendarAnalitical', 'value'),
-        Input('optiontypeAnalitical', 'value'),
-        Input('currentPriceAnalitical', 'value'),
-        Input('strikeAnalitical', 'value'),
-        Input('riskFreeAnalitical', 'value'),
-        Input('volatilityAnalitical', 'value'),
-        Input('dividendAnalitical', 'value'),
-        Input('greeksButton', 'n_clicks'),
-        Input('defineSlider', 'value')
-
-    ])
-def getGreeks(valDate, endDate, schedule, convention, calendar, optionType,
-              currentPrice, strike, riskFree, volatility, dividend, click, sliderRange):
-    greeks = GreeksParameters(valuation_date=valDate,
-                              termination_date=endDate,
-                              schedule_freq=schedule,
-                              convention=convention,
-                              calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
-                              business_convention=QuantLibConverter(
-                                  calendar=calendar).mqlBusinessConvention,
-                              termination_business_convention=QuantLibConverter(
-                                  calendar=calendar).mqlTerminationBusinessConvention,
-                              date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
-                              end_of_month=False,
-                              ##################################
-                              type_option=optionType,
-                              current_price=currentPrice,
-                              strike=strike,
-                              ann_risk_free_rate=riskFree,
-                              ann_volatility=volatility,
-                              ann_dividend=dividend)
-
-    delta = [greeks.delta() for greeks._S0 in sliderRange]
-
-    if click is None:
-        raise PreventUpdate
-    else:
-
-        return html.Div([html.H4(f'slider range {delta}'),
-                         html.Hr(),
-
-                         ])
 
 
 #####################################################----ANALYTICAL PRICE CALLBACK----###########################################
@@ -750,6 +682,86 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
 
         ])
 
+
 #####################################################----MONTE CARLO CALL BACK----###########################################
+
+#####################################################----GREEKS CALL BACK----###########################################
+
+@app.callback(
+    Output('defineSlider', 'value'),
+    [
+        Input('currentPriceAnalitical', 'value')
+    ]
+)
+def defineDashboard(starpoint):
+    values = [i for i in range(starpoint - 10, starpoint + 11)]
+    return values
+
+
+@app.callback(
+    Output('defineSlider', 'marks'),
+    [
+        Input('currentPriceAnalitical', 'value')
+    ]
+)
+def defineDashboard(starpoint):
+    marks = {i: f'{i}' for i in range(starpoint - 40, starpoint + 41)}
+    return marks
+
+
+#
+@app.callback(
+    Output('deltaShort', 'children'),
+    [
+        Input('valuationDateShort', 'date'),
+        Input('endDateShort', 'date'),
+        Input('scheduleShort', 'value'),
+        Input('conventionShort', 'value'),
+        Input('calendarShort', 'value'),
+        Input('optionTypeShort', 'value'),
+        Input('currentPriceShort', 'value'),
+        Input('strikeShort', 'value'),
+        Input('riskFreeShort', 'value'),
+        Input('volatilityShort', 'value'),
+        Input('dividendShort', 'value'),
+        Input('deltaButton', 'n_clicks'),
+        Input('defineSlider', 'value')
+
+    ])
+def getGreeks(valDate, endDate, schedule, convention, calendar, optionType,
+              currentPrice, strike, riskFree, volatility, dividend, click, sliderRange):
+    greeks = GreeksParameters(valuation_date=valDate,
+                              termination_date=endDate,
+                              schedule_freq=schedule,
+                              convention=convention,
+                              calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                              business_convention=QuantLibConverter(
+                                  calendar=calendar).mqlBusinessConvention,
+                              termination_business_convention=QuantLibConverter(
+                                  calendar=calendar).mqlTerminationBusinessConvention,
+                              date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                              end_of_month=False,
+                              ##################################
+                              type_option=optionType,
+                              current_price=currentPrice,
+                              strike=strike,
+                              ann_risk_free_rate=riskFree,
+                              ann_volatility=volatility,
+                              ann_dividend=dividend)
+
+    delta = [greeks.delta() for greeks._S0 in sliderRange]
+
+    if click is None:
+        raise PreventUpdate
+    else:
+
+        return html.Div([html.H4(f'slider range {delta}'),
+                         html.Hr(),
+
+                         ])
+
+
+#####################################################----GREEKS CALL BACK----###########################################
+
 if __name__ == '__main__':
     app.run_server(debug=True)
