@@ -52,7 +52,7 @@ class GreeksParameters(AnalyticBlackScholes):
         return gamma
 
     def vega(self):
-        vega = self._S0 * np.sqrt(-self._divid * self.mf_yf_between_valu_date_and_maturity) * np.sqrt(
+        vega = self._S0 * np.exp(-self._divid * self.mf_yf_between_valu_date_and_maturity) * np.sqrt(
             self.mf_yf_between_valu_date_and_maturity) * stats.norm.pdf(self.d1_fun(), 0, 1)
 
         return vega

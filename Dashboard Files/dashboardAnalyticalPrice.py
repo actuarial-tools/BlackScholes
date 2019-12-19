@@ -92,6 +92,21 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        html.Div(id='optionPriceAnalitical', children=''),
                                        ###################################----RESULT OPTION PRICE----###############################################
                                        html.Hr(),
+                                       dcc.Textarea(value='PRICE BEHAVIOUR',
+                                                    style={'width': '100%', 'color': 'green', 'fontSize': 18,
+                                                           'background-color': 'blue', 'border-style': 'dashed',
+                                                           'text-align': 'center'}),
+                                       html.Hr(),
+                                       dcc.RangeSlider(id='priceSliderAnalytical', min=50, max=130),
+                                       html.Div(id='dynamicOptionPrice'),
+                                       html.Hr(),
+                                       dcc.RangeSlider(id='sliderVolatilityAnalytic', min=0, max=1, step=0.05,
+                                                       value=[0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+                                                              0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95],
+                                                       marks={i: f'{i}' for i in
+                                                              [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
+                                                               0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]}),
+                                       html.Hr(),
 
                                    ]
 
@@ -249,7 +264,7 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        dcc.Input(id='volatilityShort', value=0.23, type='number',
                                                  placeholder='Volatility'),
                                        dcc.Input(id='dividendShort', value=0, type='number', placeholder='Dividend'),
-
+                                       html.Div(id='shortGreeks'),
 
                                        # html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
                                        # style={'text-align': 'center'}),
@@ -412,13 +427,18 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                                            'background-color': 'yellow', 'border-style': 'dashed',
                                                            'text-align': 'center'}),
                                        ###################################----RESULT Dynamic Slider----###############################################
-                                       dcc.RangeSlider(id='defineSlider', min=50, max=130),
+                                       dcc.RangeSlider(id='sliderPriceGreeks', min=50, max=130),
                                        html.Hr(),
-                                       html.Button('Press to get greeks', id='deltaButton',
+
+                                       html.Hr(),
+                                       html.Button('Press to get delta and gamma', id='shortDeltaGammaButton',
                                                    style={'background-color': 'brown', 'fontSize': 20}),
-                                       html.Div(id='deltaShort'),
+                                       html.Div(id='shortDeltaGamma'),
+                                       html.Button('Press to get vega', id='shortVegaButton',
+                                                   style={'background-color': 'brown', 'fontSize': 20}),
+
                                        ###################################----GREEK PARAMETERS----###############################################
-                                       html.Div(id='greeks', children='')
+                                       html.Div(id='shortVega', children='')
                                        ###################################----GREEK PARAMETERS----###############################################
 
                                    ],
@@ -498,11 +518,12 @@ def dashYearFraction(valDate, endDate, schedule, convention, calendar, optionTyp
         Input('riskFreeAnalitical', 'value'),
         Input('volatilityAnalitical', 'value'),
         Input('dividendAnalitical', 'value'),
-        Input('AnalyticalPrice', 'n_clicks')
+        Input('AnalyticalPrice', 'n_clicks'),
+        Input('priceSliderAnalytical', 'value')
 
     ])
 def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType,
-                    currentPrice, strike, riskFree, volatility, dividend, click):
+                    currentPrice, strike, riskFree, volatility, dividend, click, priceDynamic):
     o_black_scholes = AnalyticBlackScholes(valuation_date=valDate,
                                            termination_date=endDate,
                                            schedule_freq=schedule,
@@ -522,6 +543,7 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
                                            ann_volatility=volatility,
                                            ann_dividend=dividend)
     price = round(o_black_scholes.black_scholes_price_fun()[0], 3)
+    priceDynamic = [o_black_scholes.black_scholes_price_fun() for o_black_scholes._S0 in priceDynamic]
 
     if click is None:
         raise PreventUpdate
@@ -532,9 +554,11 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
             dcc.Textarea(value=f'Analytical price of option {price}',
                          style={'width': '100%', 'color': 'red', 'fontSize': 18,
                                 'background-color': 'blue', 'border-style': 'dashed',
-                                'text-align': 'center'})
+                                'text-align': 'center'}),
+            html.Div(f'change of option price {priceDynamic}')
 
-        ])
+        ]
+        )
 
 
 
@@ -687,8 +711,9 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
 
 #####################################################----GREEKS CALL BACK----###########################################
 
+#####################################----Price Slider Analytical----#######################################
 @app.callback(
-    Output('defineSlider', 'value'),
+    Output('priceSliderAnalytical', 'value'),
     [
         Input('currentPriceAnalitical', 'value')
     ]
@@ -699,7 +724,7 @@ def defineDashboard(starpoint):
 
 
 @app.callback(
-    Output('defineSlider', 'marks'),
+    Output('priceSliderAnalytical', 'marks'),
     [
         Input('currentPriceAnalitical', 'value')
     ]
@@ -709,9 +734,36 @@ def defineDashboard(starpoint):
     return marks
 
 
-#
+#####################################----Price Slider Analytical----#######################################
+
+#####################################----Price Slider Greeks----#######################################
 @app.callback(
-    Output('deltaShort', 'children'),
+    Output('sliderPriceGreeks', 'value'),
+    [
+        Input('currentPriceAnalitical', 'value')
+    ]
+)
+def defineDashboard(starpoint):
+    values = [i for i in range(starpoint - 10, starpoint + 11)]
+    return values
+
+
+@app.callback(
+    Output('sliderPriceGreeks', 'marks'),
+    [
+        Input('currentPriceAnalitical', 'value')
+    ]
+)
+def defineDashboard(starpoint):
+    marks = {i: f'{i}' for i in range(starpoint - 40, starpoint + 41)}
+    return marks
+
+
+#####################################----Price Slider Greeks----#######################################
+
+
+@app.callback(
+    Output('shortGreeks', 'children'),
     [
         Input('valuationDateShort', 'date'),
         Input('endDateShort', 'date'),
@@ -724,8 +776,8 @@ def defineDashboard(starpoint):
         Input('riskFreeShort', 'value'),
         Input('volatilityShort', 'value'),
         Input('dividendShort', 'value'),
-        Input('deltaButton', 'n_clicks'),
-        Input('defineSlider', 'value')
+        Input('shortDeltaGammaButton', 'n_clicks'),
+        Input('sliderPriceGreeks', 'value'),
 
     ])
 def getGreeks(valDate, endDate, schedule, convention, calendar, optionType,
@@ -749,15 +801,19 @@ def getGreeks(valDate, endDate, schedule, convention, calendar, optionType,
                               ann_volatility=volatility,
                               ann_dividend=dividend)
 
-    delta = [greeks.delta() for greeks._S0 in sliderRange]
+    deltaShort = [greeks.delta() for greeks._S0 in sliderRange]
+    gammaShort = [greeks.gamma() for greeks._S0 in sliderRange]
+    vegaShort = [greeks.vega() for greeks._S0 in sliderRange]
 
     if click is None:
         raise PreventUpdate
     else:
 
-        return html.Div([html.H4(f'slider range {delta}'),
+        return html.Div([html.H4(f'Delta {deltaShort}'),
                          html.Hr(),
-
+                         html.H4(f'Gamma {gammaShort}'),
+                         html.Hr(),
+                         html.H4(f'Vega {vegaShort}'),
                          ])
 
 
