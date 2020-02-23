@@ -91,26 +91,44 @@ app.layout = html.Div([dcc.Textarea(value='Black Scholes World',
                                        ###################################----RESULT OPTION PRICE----###############################################
                                        html.Div(id='optionPriceAnalitical', children=''),
                                        ###################################----RESULT OPTION PRICE----###############################################
+
+                                       ###################################----DYNAMIC OPTION PRICE----###############################################
                                        html.Hr(),
                                        dcc.Textarea(value='PRICE BEHAVIOUR',
                                                     style={'width': '100%', 'color': 'green', 'fontSize': 18,
-                                                           'background-color': 'blue', 'border-style': 'dashed',
+                                                           'background-color': 'brown', 'border-style': 'dashed',
                                                            'text-align': 'center'}),
                                        html.Hr(),
+                                       html.Label('Slider for underlying price'),
                                        dcc.RangeSlider(id='priceSliderAnalytical', min=50, max=130),
-                                       html.Div(id='dynamicOptionPrice'),
+                                       html.Button('Press to check dynamic with respect to UNDERLYING PRICE.',
+                                                   id='AnalyticalUnderlyingPriceButton',
+                                                   style={'background-color': 'red', 'fontSize': 20}),
+                                       html.Div(id='optionDynamicWRTPrice'),
                                        html.Hr(),
+                                       html.Label('Slider for Strike'),
+                                       dcc.RangeSlider(id='strikeSliderAnalytical', min=50, max=130),
+                                       html.Button('Press to check dynamic with respect to STRIKE.',
+                                                   id='AnalyticalStrikeButton',
+                                                   style={'background-color': 'red', 'fontSize': 20}),
+                                       html.Div(id='optionDynamicWRTStrike'),
+
+                                       html.Hr(),
+                                       html.Label('Slider for Volatility'),
                                        dcc.RangeSlider(id='sliderVolatilityAnalytic', min=0, max=1, step=0.05,
                                                        value=[0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
                                                               0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95],
                                                        marks={i: f'{i}' for i in
                                                               [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5,
                                                                0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]}),
+
                                        html.Hr(),
+                                       html.Div(id='optionDynamicWRTSigma'),
 
                                    ]
 
                                    ),
+                           ###################################----DYNAMIC OPTION PRICE----###############################################
                            # tab 2
                            dcc.Tab(label='Monte Carlo Price', style={'background-color': 'green'},
                                    children=[html.Div([
@@ -519,7 +537,62 @@ def dashYearFraction(valDate, endDate, schedule, convention, calendar, optionTyp
         Input('volatilityAnalitical', 'value'),
         Input('dividendAnalitical', 'value'),
         Input('AnalyticalPrice', 'n_clicks'),
-        Input('priceSliderAnalytical', 'value')
+
+    ])
+def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType,
+                    currentPrice, strike, riskFree, volatility, dividend, click):
+    o_black_scholes = AnalyticBlackScholes(valuation_date=valDate,
+                                           termination_date=endDate,
+                                           schedule_freq=schedule,
+                                           convention=convention,
+                                           calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                                           business_convention=QuantLibConverter(
+                                               calendar=calendar).mqlBusinessConvention,
+                                           termination_business_convention=QuantLibConverter(
+                                               calendar=calendar).mqlTerminationBusinessConvention,
+                                           date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                                           end_of_month=False,
+                                           ##################################
+                                           type_option=optionType,
+                                           current_price=currentPrice,
+                                           strike=strike,
+                                           ann_risk_free_rate=riskFree,
+                                           ann_volatility=volatility,
+                                           ann_dividend=dividend)
+    price = round(o_black_scholes.black_scholes_price_fun()[0], 3)
+
+    if click is None:
+        raise PreventUpdate
+    else:
+
+        return html.Div([
+
+            dcc.Textarea(value=f'Analytical price of option {price}',
+                         style={'width': '100%', 'color': 'red', 'fontSize': 18,
+                                'background-color': 'blue', 'border-style': 'dashed',
+                                'text-align': 'center'})
+
+        ]
+        )
+
+
+@app.callback(
+    Output('optionDynamicWRTPrice', 'children'),
+    [
+        Input('valuationDateAnalitical', 'date'),
+        Input('endDateAnalitical', 'date'),
+        Input('scheduleAnalitical', 'value'),
+        Input('conventionAnalitical', 'value'),
+        Input('calendarAnalitical', 'value'),
+        Input('optiontypeAnalitical', 'value'),
+        Input('currentPriceAnalitical', 'value'),
+        Input('strikeAnalitical', 'value'),
+        Input('riskFreeAnalitical', 'value'),
+        Input('volatilityAnalitical', 'value'),
+        Input('dividendAnalitical', 'value'),
+        Input('AnalyticalUnderlyingPriceButton', 'n_clicks'),
+
+        Input('priceSliderAnalytical', 'value'),
 
     ])
 def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType,
@@ -542,8 +615,8 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
                                            ann_risk_free_rate=riskFree,
                                            ann_volatility=volatility,
                                            ann_dividend=dividend)
-    price = round(o_black_scholes.black_scholes_price_fun()[0], 3)
-    priceDynamic = [o_black_scholes.black_scholes_price_fun() for o_black_scholes._S0 in priceDynamic]
+
+    optionPrices = [o_black_scholes.black_scholes_price_fun() for o_black_scholes._S0 in priceDynamic]
 
     if click is None:
         raise PreventUpdate
@@ -551,21 +624,89 @@ def dashOptionPrice(valDate, endDate, schedule, convention, calendar, optionType
 
         return html.Div([
 
-            dcc.Textarea(value=f'Analytical price of option {price}',
+            dcc.Textarea(value=f'{optionPrices}',
                          style={'width': '100%', 'color': 'red', 'fontSize': 18,
-                                'background-color': 'blue', 'border-style': 'dashed',
-                                'text-align': 'center'}),
-            html.Div(f'change of option price {priceDynamic}')
+                                'background-color': 'pink', 'border-style': 'dashed',
+                                'text-align': 'center'})
 
         ]
         )
 
 
+@app.callback(
+    Output('optionDynamicWRTStrike', 'children'),
+    [
+        Input('valuationDateAnalitical', 'date'),
+        Input('endDateAnalitical', 'date'),
+        Input('scheduleAnalitical', 'value'),
+        Input('conventionAnalitical', 'value'),
+        Input('calendarAnalitical', 'value'),
+        Input('optiontypeAnalitical', 'value'),
+        Input('currentPriceAnalitical', 'value'),
+        Input('strikeAnalitical', 'value'),
+        Input('riskFreeAnalitical', 'value'),
+        Input('volatilityAnalitical', 'value'),
+        Input('dividendAnalitical', 'value'),
+        Input('AnalyticalStrikeButton', 'n_clicks'),
+        Input('strikeSliderAnalytical', 'value'),
 
+    ])
+def dashOptionPricestrike(valDate, endDate, schedule, convention, calendar, optionType,
+                          currentPrice, strike, riskFree, volatility, dividend, click2, strikechange):
+    o_black_scholes2 = AnalyticBlackScholes(valuation_date=valDate,
+                                            termination_date=endDate,
+                                            schedule_freq=schedule,
+                                            convention=convention,
+                                            calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                                            business_convention=QuantLibConverter(
+                                                calendar=calendar).mqlBusinessConvention,
+                                            termination_business_convention=QuantLibConverter(
+                                                calendar=calendar).mqlTerminationBusinessConvention,
+                                            date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                                            end_of_month=False,
+                                            ##################################
+                                            type_option=optionType,
+                                            current_price=currentPrice,
+                                            strike=strike,
+                                            ann_risk_free_rate=riskFree,
+                                            ann_volatility=volatility,
+                                            ann_dividend=dividend)
+
+    optionPrices = [o_black_scholes2.black_scholes_price_fun() for o_black_scholes2._K in [85, 76, 70]]
+
+    if click2 is None:
+        raise PreventUpdate
+    else:
+
+        return html.Div([
+
+            dcc.Textarea(value=f'{optionPrices}',
+                         style={'width': '100%', 'color': 'red', 'fontSize': 18,
+                                'background-color': 'pink', 'border-style': 'dashed',
+                                'text-align': 'center'})
+
+        ]
+        )
 
 #####################################################----ANALYTICAL PRICE CALLBACK----###########################################
 
-
+@app.callback(Output('optionDynamicWRTSigma', 'children'),
+              Input[
+                  Input('valuationDateAnalitical', 'date'),
+                  Input('endDateAnalitical', 'date'),
+                  Input('scheduleAnalitical', 'value'),
+                  Input('conventionAnalitical', 'value'),
+                  Input('calendarAnalitical', 'value'),
+                  Input('optiontypeAnalitical', 'value'),
+                  Input('currentPriceAnalitical', 'value'),
+                  Input('strikeAnalitical', 'value'),
+                  Input('riskFreeAnalitical', 'value'),
+                  Input('volatilityAnalitical', 'value'),
+                  Input('dividendAnalitical', 'value'),
+                  Input('AnalyticalStrikeButton', 'n_clicks'),
+                  Input('strikeSliderAnalytical', 'value'),
+              ]
+              )
 #####################################################----MONTE CARLO CALL BACK----###########################################
 
 @app.callback(
@@ -735,6 +876,32 @@ def defineDashboard(starpoint):
 
 
 #####################################----Price Slider Analytical----#######################################
+
+#####################################----Strike Slider Analytical----#######################################
+@app.callback(
+    Output('strikeSliderAnalytical', 'value'),
+    [
+        Input('strikeAnalitical', 'value')
+    ]
+)
+def defineslider(starpoint):
+    values = [i for i in range(starpoint - 2, starpoint + 2)]
+    return values
+
+
+@app.callback(
+    Output('strikeSliderAnalytical', 'marks'),
+    [
+        Input('strikeAnalitical', 'value')
+    ]
+)
+def defineslider(starpoint):
+    marks = {i: f'{i}' for i in range(starpoint - 40, starpoint + 41)}
+    return marks
+
+
+#####################################----Strike Slider Analytical----#######################################
+
 
 #####################################----Price Slider Greeks----#######################################
 @app.callback(
