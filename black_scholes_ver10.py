@@ -55,6 +55,8 @@ class AnalyticBlackScholes(SetUpSchedule):
                      np.sqrt(self.ml_yf) * self._sigma)
         return d2
 
+    ####################################---- Plain Vanila ----
+
     def black_scholes_price_fun(self):
         if (self._type_option == 'call'):
             price = self._S0 * np.exp(-self.ml_yf[0] * self._divid) * sc.stats.norm.cdf(
@@ -67,6 +69,26 @@ class AnalyticBlackScholes(SetUpSchedule):
                 -self.ml_yf[0] * self._divid) * stats.norm.cdf(-self.d1_fun(), 0, 1)
         return price
 
+    def digitalOption(self):
+        if (self._type_option == 'call'):
+            price = np.exp(-self.ml_yf[0] * self._r) * sc.stats.norm.cdf(
+                self.d2_fun(), 0, 1)
+        else:
+            price = np.exp(-self.ml_yf[0] * self._r) * sc.stats.norm.cdf(
+                -self.d2_fun(), 0, 1)
+        return price
+
+    def AssetorNothing(self):
+        if (self._type_option == 'call'):
+            price = self._S0 * np.exp(-self.ml_yf[0] * self._divid) * sc.stats.norm.cdf(
+                self.d1_fun(), 0, 1)
+        else:
+            price = self._S0 * np.exp(-self.ml_yf[0] * self._divid) * sc.stats.norm.cdf(
+                -self.d1_fun(), 0, 1)
+        return price
+
+    #
+    # def assetOrNothing(self):
 
 if __name__ == '__main__':
     pass
