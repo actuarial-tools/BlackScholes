@@ -101,8 +101,12 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
                        html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
                                 style={'text-align': 'center'}),
                        html.Hr(),
+
                        ###################################----RESULT----###############################################
                        html.Div(id='MonteCarloPrice', children=''),
+                       html.Button('Press to get Option Price', id='mcOptionPriceButton',
+                                   style={'background-color': 'brown', 'fontSize': 20}),
+                       html.Div(id='getPrice', children='')
 
                        ###################################----RESULT----###############################################
                        ], style={'align-items': 'center', 'justify-content': 'center'})
@@ -125,11 +129,11 @@ app.layout = html.Div([dcc.Textarea(value='Simulate Equity Price',
         Input('volatility', 'value'),
         Input('dividend', 'value'),
         Input('sample', 'value'),
-        Input('numberOfPathToDisplay', 'value')
+        Input('numberOfPathToDisplay', 'value'),
 
     ])
-def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
-                currentPrice, strike, riskFree, volatility, dividend, runs, display):
+def plotPaths(valDate, endDate, schedule, convention, calendar, optionType,
+              currentPrice, strike, riskFree, volatility, dividend, runs, display):
     equitySimulation = EquityModels(valuation_date=valDate,
                                     termination_date=endDate,
                                     schedule_freq=schedule,
@@ -197,12 +201,62 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
 
                   ),
 
-        dcc.Textarea(value=f'Monte Carlo Price price of option {price}',
-                     style={'width': '100%', 'color': 'red', 'fontSize': 18,
-                            'background-color': 'blue', 'border-style': 'dashed',
-                            'text-align': 'center'})
+    ])
+
+
+@app.callback(
+
+    Output('getPrice', 'children'),
+
+    [
+        Input('valuationDate', 'date'),
+        Input('endDate', 'date'),
+        Input('schedule', 'value'),
+        Input('convention', 'value'),
+        Input('calendar', 'value'),
+        Input('optiontype', 'value'),
+        Input('currentPrice', 'value'),
+        Input('strike', 'value'),
+        Input('riskFree', 'value'),
+        Input('volatility', 'value'),
+        Input('dividend', 'value'),
+        Input('sample', 'value'),
+        Input('mcOptionPriceButton', 'n_clicks'),
 
     ])
+def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
+                currentPrice, strike, riskFree, volatility, dividend, runs, click):
+    equitySimulation = EquityModels(valuation_date=valDate,
+                                    termination_date=endDate,
+                                    schedule_freq=schedule,
+                                    convention=convention,
+                                    calendar=QuantLibConverter(calendar=calendar).mqlCalendar,
+                                    business_convention=QuantLibConverter(
+                                        calendar=calendar).mqlBusinessConvention,
+                                    termination_business_convention=QuantLibConverter(
+                                        calendar=calendar).mqlTerminationBusinessConvention,
+                                    date_generation=QuantLibConverter(calendar=calendar).mqlDateGeneration,
+                                    end_of_month=False,
+                                    ##################################
+                                    type_option=optionType,
+                                    current_price=currentPrice,
+                                    strike=strike,
+                                    ann_risk_free_rate=riskFree,
+                                    ann_volatility=volatility,
+                                    ann_dividend=dividend,
+                                    runs=runs)
+
+    price = round(equitySimulation.mf_monte_carlo_price, 3)
+
+    if click is None:
+        raise PreventUpdate
+    else:
+        return html.Div([dcc.Textarea(value=f'Monte Carlo Price price of option {price}',
+                                      style={'width': '100%', 'color': 'red', 'fontSize': 18,
+                                             'background-color': 'blue', 'border-style': 'dashed',
+                                             'text-align': 'center'})
+                         ]
+                        )
 
 
 if __name__ == '__main__':
