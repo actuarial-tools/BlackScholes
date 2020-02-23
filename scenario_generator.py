@@ -47,8 +47,8 @@ class EquityModels(SetUpSchedule):
         self.mdfprices = self.realizationPaths()
         self.mlt_payoffandST = self.calculate_payoffs()  # lt list of tuples ST and tuples and payoff sorted
         self.mf_monte_carlo_price = self.monte_carlo_price()
-        self.mListOfDates=self.m_schedule
-
+        self.mListOfDates = self.m_schedule
+        self.mHistogST = self.histogramOfSTValues()
 
     def geometric_brownian_motion_scenario_fun(self):
         dt = self.ml_yf
@@ -78,16 +78,21 @@ class EquityModels(SetUpSchedule):
     def monte_carlo_price(self) -> float:
         take_payoff = lambda x: x[1] #get second coordinates from tuple
         payoff = list(map(take_payoff, self.mlt_payoffandST))
-        return np.mean(payoff)*np.exp(-self._drift*self.mf_yf_between_valu_date_and_maturity)
+        return np.mean(payoff) * np.exp(-self._drift * self.mf_yf_between_valu_date_and_maturity)
 
     # histogram corresponding to the final values of paths
-    def histogramOfSt(self):
+    def plothistogramOfSt(self):
         ST = self.m_ar_equity_price[-1]
         hist = sns.distplot(ST, hist=True, rug=True)
         plt.axvline(self._S0, color='red')
         plt.xlim((0, max(ST) + 5))
         plt.xlabel("Spot Price")
         plt.show()
+
+    def histogramOfSTValues(self):
+        ST = self.m_ar_equity_price[-1]
+        stHist = np.histogram(ST, bins=25)
+        return stHist
 
     def realizationPaths(self):
         df = pd.DataFrame(self.m_ar_equity_price, index=self.ml_dates)
@@ -118,8 +123,8 @@ if __name__ == '__main__':
     #                                          ann_volatility=controlFile.loc[13, 'Value'],
     #                                          ann_dividend=controlFile.loc[14, 'Value'],
     #                                          runs=controlFile.loc[15, 'Value'])
-    #
-    # # o_black_scholes_scenarios.histogramOfSt()
+
+    # o_black_scholes_scenarios.histogramOfSTValues()
     # ####################################------OUTPUT in EXCEL------###############################################
     # outputPath = '/Users/krzysiekbienias/Downloads/ControlFiles'
     # os.chdir(controlPath)

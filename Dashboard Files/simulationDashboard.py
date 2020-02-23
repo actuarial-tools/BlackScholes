@@ -2,6 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_table as dt
 import dash_html_components as html
+
 import QuantLib as ql
 
 from dash.dependencies import Output, Input
@@ -14,6 +15,7 @@ import pandas as pd
 import os
 import datetime
 import base64
+import plotly.plotly as py
 
 
 def generate_table(dataframe, max_rows=26):
@@ -152,6 +154,7 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
     paths = equitySimulation.m_ar_equity_price
     lqlDates = list(equitySimulation.mListOfDates)
     ldtDates = [d.to_date() for d in lqlDates]
+    hist = equitySimulation.mHistogST
 
     return html.Div([
         dcc.Graph(figure=dict(data=
@@ -162,6 +165,26 @@ def optionPrice(valDate, endDate, schedule, convention, calendar, optionType,
                               layout=dict(
                                   xaxis={'title': 'Dates'},
                                   yaxis={'title': 'Equity Price'},
+                                  title='Equity simulation modeled by geometric brownian motion',
+                                  showlegend=True,
+                                  legend=dict(x=0,
+                                              y=1.0),
+                                  margin=dict(l=40, r=0, t=40, b=30),
+                              )
+
+                              ),
+                  style={'height': 300}
+
+                  ),
+
+        dcc.Graph(figure=dict(data=
+                              [dict(x=hist[1],
+                                    y=hist[0],
+                                    type='bar')],
+
+                              layout=dict(
+                                  xaxis={'title': 'ST'},
+                                  yaxis={'title': 'Number'},
                                   title='Equity simulation modeled by geometric brownian motion',
                                   showlegend=True,
                                   legend=dict(x=0,
